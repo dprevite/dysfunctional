@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../../schemas/function.schema.json
+
+function:
+  name: Something
+  description: This is a sample function
+  route: /something
+  method: GET
+  runtime: php:8.4
+  entrypoint: entrypoint.php
+
+docker:
+  volumes:
+    - ./cache:/cache
+  labels:
+    - "dysfunctional"

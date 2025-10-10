@@ -1,0 +1,21 @@
+{
+    frankenphp
+	auto_https off
+	admin off
+}
+
+:80 {
+	root * /app/public
+    encode zstd br gzip
+
+	# Serve static files directly (CSS, JS, images, etc.)
+	@static {
+		file {path}
+	}
+	handle @static {
+		file_server
+	}
+
+	# Route everything else through PHP
+	php_server
+}

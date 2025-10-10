@@ -1,0 +1,236 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dysfunctional.homelab/schemas/function.schema.json",
+  "title": "Dysfunctional Function Definition",
+  "description": "Schema for defining serverless functions in Dysfunctional",
+  "type": "object",
+  "required": ["function"],
+  "properties": {
+    "function": {
+      "type": "object",
+      "description": "Core function configuration",
+      "required": ["name", "description", "route", "method", "runtime", "entrypoint"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Display name of the function",
+          "minLength": 1,
+          "examples": ["Something", "UserAuth", "DataProcessor"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of what the function does",
+          "minLength": 1,
+          "examples": ["This is a sample function", "Handles user authentication"]
+        },
+        "route": {
+          "type": "string",
+          "description": "HTTP route path for the function",
+          "pattern": "^/.*",
+          "examples": ["/something", "/api/users", "/webhooks/stripe"]
+        },
+        "method": {
+          "type": "string",
+          "description": "HTTP method for the function",
+          "enum": ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
+          "examples": ["GET", "POST"]
+        },
+        "runtime": {
+          "type": "string",
+          "description": "Runtime environment for the function",
+          "pattern": "^(php|node|python|go|rust):[0-9]+(\\.[0-9]+)*(-[a-z]+)?$",
+          "examples": ["php:8.4", "node:20", "python:3.12"]
+        },
+        "entrypoint": {
+          "type": "string",
+          "description": "Entry file for the function",
+          "examples": ["entrypoint.php", "index.js", "main.py"]
+        },
+        "timeout": {
+          "type": "integer",
+          "description": "Function timeout in seconds",
+          "minimum": 1,
+          "maximum": 900,
+          "default": 30,
+          "examples": [30, 60, 300]
+        },
+        "memory": {
+          "type": "string",
+          "description": "Memory limit for the function",
+          "pattern": "^[0-9]+(M|G)$",
+          "examples": ["128M", "512M", "1G"]
+        },
+        "env": {
+          "type": "object",
+          "description": "Environment variables for the function",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "examples": [
+            {
+              "DATABASE_URL": "postgresql://localhost:5432/db",
+              "LOG_LEVEL": "info"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "docker": {
+      "type": "object",
+      "description": "Docker-specific configuration",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "Custom Docker image to use",
+          "examples": ["custom/runtime:latest"]
+        },
+        "volumes": {
+          "type": "array",
+          "description": "Volume mounts for the container",
+          "items": {
+            "type": "string",
+            "pattern": "^[^:]+:[^:]+(:ro|:rw)?$"
+          },
+          "examples": [["./cache:/cache", "./data:/data:ro"]]
+        },
+        "networks": {
+          "type": "array",
+          "description": "Docker networks to attach",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "examples": [["tsbridge", "backend"]]
+        },
+        "labels": {
+          "type": "array",
+          "description": "Docker labels for the container",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "examples": [["dysfunctional", "production", "tsbridge.enabled=true"]]
+        },
+        "ports": {
+          "type": "array",
+          "description": "Port mappings",
+          "items": {
+            "type": "string",
+            "pattern": "^([0-9]+:)?[0-9]+(/tcp|/udp)?$"
+          },
+          "examples": [["8080:80", "3000"]]
+        },
+        "capabilities": {
+          "type": "array",
+          "description": "Linux capabilities to add",
+          "items": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "AUDIT_CONTROL",
+              "AUDIT_READ",
+              "AUDIT_WRITE",
+              "BLOCK_SUSPEND",
+              "CHOWN",
+              "DAC_OVERRIDE",
+              "DAC_READ_SEARCH",
+              "FOWNER",
+              "FSETID",
+              "IPC_LOCK",
+              "IPC_OWNER",
+              "KILL",
+              "LEASE",
+              "LINUX_IMMUTABLE",
+              "MAC_ADMIN",
+              "MAC_OVERRIDE",
+              "MKNOD",
+              "NET_ADMIN",
+              "NET_BIND_SERVICE",
+              "NET_BROADCAST",
+              "NET_RAW",
+              "SETFCAP",
+              "SETGID",
+              "SETPCAP",
+              "SETUID",
+              "SYS_ADMIN",
+              "SYS_BOOT",
+              "SYS_CHROOT",
+              "SYS_MODULE",
+              "SYS_NICE",
+              "SYS_PACCT",
+              "SYS_PTRACE",
+              "SYS_RAWIO",
+              "SYS_RESOURCE",
+              "SYS_TIME",
+              "SYS_TTY_CONFIG",
+              "SYSLOG",
+              "WAKE_ALARM"
+            ]
+          },
+          "examples": [["NET_ADMIN", "SYS_TIME"]]
+        }
+      },
+      "additionalProperties": false
+    },
+    "scaling": {
+      "type": "object",
+      "description": "Scaling configuration for the function",
+      "properties": {
+        "min": {
+          "type": "integer",
+          "description": "Minimum number of instances",
+          "minimum": 0,
+          "default": 0
+        },
+        "max": {
+          "type": "integer",
+          "description": "Maximum number of instances",
+          "minimum": 1,
+          "default": 10
+        },
+        "targetCPU": {
+          "type": "integer",
+          "description": "Target CPU utilization percentage for scaling",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 80
+        },
+        "targetMemory": {
+          "type": "integer",
+          "description": "Target memory utilization percentage for scaling",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 80
+        }
+      },
+      "additionalProperties": false
+    },
+    "triggers": {
+      "type": "object",
+      "description": "Event triggers for the function",
+      "properties": {
+        "cron": {
+          "type": "array",
+          "description": "Cron schedule expressions",
+          "items": {
+            "type": "string",
+            "pattern": "^(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\\d+(ns|us|µs|ms|s|m|h))+)|(((\\d+,)+\\d+|(\\d+([/-])\\d+)|\\d+|\\*) ?){5,7}$"
+          },
+          "examples": [["0 */6 * * *", "@daily"]]
+        },
+        "events": {
+          "type": "array",
+          "description": "Event types that trigger the function",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "examples": [["user.created", "order.completed"]]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
