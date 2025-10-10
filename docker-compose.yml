@@ -3,7 +3,7 @@ services:
     build:
       target: development
       context: .
-      dockerfile: Dockerfiles
+      dockerfile: Dockerfile
     env_file:
       - .env.docker
     environment:
