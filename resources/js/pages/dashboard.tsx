@@ -1,4 +1,18 @@
-import { Activity, Clock, FileText, HardDrive, LogOut, OctagonAlertIcon, Server, Settings, Terminal, User } from 'lucide-react';
+import {
+    Activity,
+    AlertCircle,
+    CheckCircle,
+    Clock,
+    FileText,
+    HardDrive,
+    Loader2,
+    LogOut,
+    OctagonAlertIcon,
+    Server,
+    Settings,
+    Terminal,
+    User
+} from 'lucide-react';
 import React from 'react';
 
 const DropdownMenu = ({ children }: { children: React.ReactNode }) => {
@@ -82,13 +96,13 @@ const TagDropdown = ({
             </button>
 
             {open && (
-                <div className="absolute left-0 top-full z-10 mt-1 w-56 rounded-md border border-gray-700/50 bg-black/95 shadow-lg shadow-black/50 backdrop-blur-sm">
+                <div className="absolute top-full left-0 z-10 mt-1 w-56 rounded-md border border-gray-700/50 bg-black/95 shadow-lg shadow-black/50 backdrop-blur-sm">
                     <button
                         onClick={() => {
                             console.log(`Exclude ${type}: ${label}`);
                             setOpen(false);
                         }}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-left font-mono text-xs text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left font-mono text-[0.65rem] text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
                     >
                         Exclude this {type}
                     </button>
@@ -97,7 +111,7 @@ const TagDropdown = ({
                             console.log(`Show only ${type}: ${label}`);
                             setOpen(false);
                         }}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-left font-mono text-xs text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left font-mono text-[0.65rem] text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
                     >
                         Show only this {type}
                     </button>
@@ -107,7 +121,7 @@ const TagDropdown = ({
                             console.log(`View ${type} details: ${label}`);
                             setOpen(false);
                         }}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-left font-mono text-xs text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left font-mono text-[0.65rem] text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
                     >
                         View {type} details
                     </button>
@@ -153,40 +167,44 @@ const StatusBadge = ({
             text: 'text-blue-400',
             border: 'border-blue-500/30',
             label: 'Running',
+            icon: Loader2,
         },
         success: {
             bg: 'bg-green-500/10',
             text: 'text-green-400',
             border: 'border-green-500/30',
             label: 'Exit 0',
+            icon: CheckCircle,
         },
         error: {
             bg: 'bg-red-500/10',
             text: 'text-red-400',
             border: 'border-red-500/30',
             label: `Exit ${exitCode ?? 1}`,
+            icon: AlertCircle,
         },
     };
 
-    const { bg, text, border, label } = config[status];
+    const { bg, text, border, label, icon: Icon } = config[status];
 
     return (
         <div ref={dropdownRef} className="relative">
             <button
                 onClick={() => setOpen(!open)}
-                className={`rounded border px-2 py-0.5 font-mono text-xs transition-opacity hover:opacity-80 ${bg} ${text} ${border}`}
+                className={`flex items-center gap-1 rounded border px-2 py-0.5 font-mono text-xs transition-opacity hover:opacity-80 ${bg} ${text} ${border}`}
             >
+                <Icon className={`h-3 w-3 ${status === 'running' ? 'animate-spin' : ''}`} />
                 {label}
             </button>
 
             {open && (
-                <div className="absolute left-0 top-full z-10 mt-1 w-56 rounded-md border border-gray-700/50 bg-black/95 shadow-lg shadow-black/50 backdrop-blur-sm">
+                <div className="absolute top-full left-0 z-10 mt-1 w-56 rounded-md border border-gray-700/50 bg-black/95 shadow-lg shadow-black/50 backdrop-blur-sm">
                     <button
                         onClick={() => {
                             console.log(`Exclude status: ${status}`);
                             setOpen(false);
                         }}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-left font-mono text-xs text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left font-mono text-[0.65rem] text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
                     >
                         Exclude this status
                     </button>
@@ -195,7 +213,7 @@ const StatusBadge = ({
                             console.log(`Show only status: ${status}`);
                             setOpen(false);
                         }}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-left font-mono text-xs text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left font-mono text-[0.65rem] text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
                     >
                         Show only this status
                     </button>
@@ -257,10 +275,7 @@ const TerminalBlock = ({
                     </span>
                     <div className="flex items-center gap-2">
                         {functionName && (
-                            <TagDropdown
-                                label={functionName}
-                                type="function"
-                            />
+                            <TagDropdown label={functionName} type="function" />
                         )}
                         {runtime && (
                             <TagDropdown label={runtime} type="runtime" />
@@ -280,18 +295,28 @@ const TerminalBlock = ({
                 ref={logContainerRef}
                 className="max-h-64 overflow-y-auto p-4 font-mono text-xs text-gray-300"
             >
-                {logs.map((log, index) => (
-                    <div key={index} className="group">
-                        <a
-                            href={`#log-${logId}-${index}`}
-                            id={`log-${logId}-${index}`}
-                            className="inline-block text-gray-600 transition-colors hover:text-gray-400"
-                        >
-                            {log.timestamp}
-                        </a>{' '}
-                        <span>{log.message}</span>
-                    </div>
-                ))}
+                {logs.map((log, index) => {
+                    const isError = log.message.includes('[ERROR]');
+                    const isSuccess = log.message.includes('[SUCCESS]');
+                    const textColor = isError
+                        ? 'text-red-400'
+                        : isSuccess
+                          ? 'text-green-400'
+                          : 'text-gray-300';
+
+                    return (
+                        <div key={index} className="group">
+                            <a
+                                href={`#log-${logId}-${index}`}
+                                id={`log-${logId}-${index}`}
+                                className="inline-block text-gray-600 transition-colors hover:text-gray-400"
+                            >
+                                {log.timestamp}
+                            </a>{' '}
+                            <span className={textColor}>{log.message}</span>
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
@@ -382,11 +407,9 @@ export default function TerminalDashboard() {
                     {/* User Dropdown */}
                     <DropdownMenu>
                         <DropdownMenuTrigger>
-                            <div className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-700/50 bg-white/5 px-3 py-1.5 transition-colors hover:bg-white/10">
-                                <User className="h-4 w-4 text-gray-400" />
-                                <span className="font-mono text-sm text-gray-300">
-                                    dprevite
-                                </span>
+                            <div className="flex cursor-pointer items-center gap-1 font-mono text-sm font-semibold text-white">
+                                <span>dprevite</span>
+                                <span className="inline-block h-4 w-1.5 animate-pulse bg-white"></span>
                             </div>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
@@ -443,8 +466,7 @@ export default function TerminalDashboard() {
                     logs={[
                         {
                             timestamp: '2025-10-11T19:29:21.123Z',
-                            message:
-                                '[INFO] Container started successfully',
+                            message: '[INFO] Container started successfully',
                         },
                         {
                             timestamp: '2025-10-11T19:29:21.456Z',
@@ -458,7 +480,8 @@ export default function TerminalDashboard() {
                         },
                         {
                             timestamp: '2025-10-11T19:29:22.234Z',
-                            message: '[INFO] Used by: 0 developers | Build time: 2.3s',
+                            message:
+                                '[INFO] Used by: 0 developers | Build time: 2.3s',
                         },
                         {
                             timestamp: '2025-10-11T19:29:22.567Z',
@@ -471,7 +494,8 @@ export default function TerminalDashboard() {
                         },
                         {
                             timestamp: '2025-10-11T19:29:23.345Z',
-                            message: '[INFO] Docker daemon connected successfully',
+                            message:
+                                '[INFO] Docker daemon connected successfully',
                         },
                         {
                             timestamp: '2025-10-11T19:29:23.678Z',
@@ -483,7 +507,8 @@ export default function TerminalDashboard() {
                         },
                         {
                             timestamp: '2025-10-11T19:29:24.456Z',
-                            message: '[INFO] Creating container with id: abc123def456',
+                            message:
+                                '[INFO] Creating container with id: abc123def456',
                         },
                         {
                             timestamp: '2025-10-11T19:29:24.789Z',
@@ -518,15 +543,18 @@ export default function TerminalDashboard() {
                     logs={[
                         {
                             timestamp: '2025-10-11T19:30:01.123Z',
-                            message: '[INFO] Starting image processing pipeline',
+                            message:
+                                '[INFO] Starting image processing pipeline',
                         },
                         {
                             timestamp: '2025-10-11T19:30:01.456Z',
-                            message: '[INFO] Loading image from S3: images/photo.jpg',
+                            message:
+                                '[INFO] Loading image from S3: images/photo.jpg',
                         },
                         {
                             timestamp: '2025-10-11T19:30:02.001Z',
-                            message: '[INFO] Image loaded: 4032x3024 pixels (12.2 MB)',
+                            message:
+                                '[INFO] Image loaded: 4032x3024 pixels (12.2 MB)',
                         },
                         {
                             timestamp: '2025-10-11T19:30:02.234Z',
@@ -562,7 +590,8 @@ export default function TerminalDashboard() {
                         },
                         {
                             timestamp: '2025-10-11T19:28:01.456Z',
-                            message: '[INFO] Connecting to database: postgres://prod-db',
+                            message:
+                                '[INFO] Connecting to database: postgres://prod-db',
                         },
                         {
                             timestamp: '2025-10-11T19:28:02.001Z',
@@ -578,24 +607,28 @@ export default function TerminalDashboard() {
                         },
                         {
                             timestamp: '2025-10-11T19:28:03.001Z',
-                            message: '[INFO] Running migration: 001_create_users_table.sql',
+                            message:
+                                '[INFO] Running migration: 001_create_users_table.sql',
                         },
                         {
                             timestamp: '2025-10-11T19:28:03.345Z',
-                            message: '[INFO] Migration 001 completed successfully',
+                            message:
+                                '[INFO] Migration 001 completed successfully',
                         },
                         {
                             timestamp: '2025-10-11T19:28:03.678Z',
-                            message: '[INFO] Running migration: 002_add_email_column.sql',
+                            message:
+                                '[INFO] Running migration: 002_add_email_column.sql',
                         },
                         {
                             timestamp: '2025-10-11T19:28:04.123Z',
                             message:
-                                '[ERROR] Duplicate column name \'email\' in table \'users\'',
+                                "[ERROR] Duplicate column name 'email' in table 'users'",
                         },
                         {
                             timestamp: '2025-10-11T19:28:04.456Z',
-                            message: '[ERROR] Migration failed: Constraint violation',
+                            message:
+                                '[ERROR] Migration failed: Constraint violation',
                         },
                         {
                             timestamp: '2025-10-11T19:28:04.789Z',
@@ -616,24 +649,18 @@ export default function TerminalDashboard() {
                         <div className="flex items-center gap-2">
                             <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-400 shadow-lg shadow-green-400/50"></div>
                             <span className="font-semibold text-green-400">
-                                ONLINE
+                                Connected
                             </span>
                         </div>
-                        <div className="text-gray-500">
-                            <span className="text-gray-600">v</span>
-                            musing_solomon1
-                        </div>
-                        <div className="text-gray-500">
-                            Transmission:{' '}
-                            <span className="text-gray-300">0 B / 0 B</span>
+                        <div className="flex items-center gap-2">
+                            <CheckCircle className="h-3.5 w-3.5 text-green-400" />
+                            <span className="font-semibold text-green-400">
+                                Healthy
+                            </span>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-6">
-                        <div className="text-gray-500">
-                            Active Connections:{' '}
-                            <span className="text-gray-300">0</span>
-                        </div>
                         <div className="flex items-center gap-2 text-gray-400">
                             <Clock className="h-3 w-3" />
                             {currentTime.toLocaleTimeString()}
