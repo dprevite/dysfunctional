@@ -5,6 +5,7 @@ import laravel from 'laravel-vite-plugin';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+    base: '/vite',
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
@@ -19,5 +20,19 @@ export default defineConfig({
     ],
     esbuild: {
         jsx: 'automatic',
+    },
+    server: {
+        host: '0.0.0.0',
+        port: 5173,
+        strictPort: true,
+        hmr: {
+            host: 'dysfunctional-staging.stegosaurus-hoki.ts.net',
+            protocol: 'wss',
+            clientPort: 443,
+            path: '/vite',
+        },
+        watch: {
+            usePolling: true,
+        },
     },
 });

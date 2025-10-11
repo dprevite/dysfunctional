@@ -32,8 +32,8 @@ RUN apt-get update && \
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Install NVM and Node.js
-ENV NODE_VERSION=20.11.0
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash && \
+ENV NODE_VERSION=24
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash && \
 	export NVM_DIR="/config/nvm" && \
 	. "$NVM_DIR/nvm.sh" && \
 	nvm install ${NODE_VERSION} && \
@@ -85,6 +85,8 @@ CMD ["frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile"]
 FROM base AS production
 
 WORKDIR /app
+
+RUN rm -rf .git .github tests
 
 USER www-data
 

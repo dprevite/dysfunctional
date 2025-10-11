@@ -8,13 +8,13 @@
 	root * /app/public
     encode zstd br gzip
 
+	# Proxy all Vite dev server requests (including HMR WebSocket)
+	@vite path /vite/*
+	reverse_proxy @vite 127.0.0.1:5173
+
 	# Serve static files directly (CSS, JS, images, etc.)
-	@static {
-		file {path}
-	}
-	handle @static {
-		file_server
-	}
+	@static file {path}
+	file_server @static
 
 	# Route everything else through PHP
 	php_server
