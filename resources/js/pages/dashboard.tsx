@@ -20,7 +20,7 @@ import {
     User
 } from 'lucide-react';
 import React from 'react';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis } from 'recharts';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/app-sidebar';
@@ -742,35 +742,35 @@ const FunctionCallsChart = () => {
 
     // Mock data - will be replaced with real data later
     const data24h = [
-        { time: '00:00', calls: 12 },
-        { time: '02:00', calls: 8 },
-        { time: '04:00', calls: 5 },
-        { time: '06:00', calls: 15 },
-        { time: '08:00', calls: 28 },
-        { time: '10:00', calls: 35 },
-        { time: '12:00', calls: 42 },
-        { time: '14:00', calls: 38 },
-        { time: '16:00', calls: 45 },
-        { time: '18:00', calls: 32 },
-        { time: '20:00', calls: 25 },
-        { time: '22:00', calls: 18 },
+        { time: '00:00', success: 10, errors: 2 },
+        { time: '02:00', success: 7, errors: 1 },
+        { time: '04:00', success: 4, errors: 1 },
+        { time: '06:00', success: 13, errors: 2 },
+        { time: '08:00', success: 25, errors: 3 },
+        { time: '10:00', success: 32, errors: 3 },
+        { time: '12:00', success: 38, errors: 4 },
+        { time: '14:00', success: 34, errors: 4 },
+        { time: '16:00', success: 40, errors: 5 },
+        { time: '18:00', success: 28, errors: 4 },
+        { time: '20:00', success: 22, errors: 3 },
+        { time: '22:00', success: 15, errors: 3 },
     ];
 
     const data7d = [
-        { time: 'Mon', calls: 145 },
-        { time: 'Tue', calls: 132 },
-        { time: 'Wed', calls: 168 },
-        { time: 'Thu', calls: 154 },
-        { time: 'Fri', calls: 189 },
-        { time: 'Sat', calls: 98 },
-        { time: 'Sun', calls: 87 },
+        { time: 'Mon', success: 130, errors: 15 },
+        { time: 'Tue', success: 120, errors: 12 },
+        { time: 'Wed', success: 155, errors: 13 },
+        { time: 'Thu', success: 142, errors: 12 },
+        { time: 'Fri', success: 175, errors: 14 },
+        { time: 'Sat', success: 88, errors: 10 },
+        { time: 'Sun', success: 78, errors: 9 },
     ];
 
     const data30d = [
-        { time: 'Week 1', calls: 856 },
-        { time: 'Week 2', calls: 923 },
-        { time: 'Week 3', calls: 1045 },
-        { time: 'Week 4', calls: 987 },
+        { time: 'Week 1', success: 800, errors: 56 },
+        { time: 'Week 2', success: 870, errors: 53 },
+        { time: 'Week 3', success: 990, errors: 55 },
+        { time: 'Week 4', success: 930, errors: 57 },
     ];
 
     const chartData = timeframe === '24h' ? data24h : timeframe === '7d' ? data7d : data30d;
@@ -785,15 +785,15 @@ const FunctionCallsChart = () => {
         <div className="rounded-md border border-gray-700/50 bg-black/50 p-4 shadow-md shadow-black/20">
             <div className="mb-4 flex items-center justify-between">
                 <div>
-                    <h3 className="font-mono text-sm font-semibold text-white">Function Calls</h3>
-                    <p className="font-mono text-xs text-gray-500">Activity over time</p>
+                    <h3 className="font-mono text-sm font-semibold text-white">Function Executions</h3>
+                    <p className="font-mono text-xs text-gray-500">Success vs errors over time</p>
                 </div>
                 <div ref={dropdownRef} className="relative">
                     <button
                         onClick={() => setDropdownOpen(!dropdownOpen)}
-                        className="flex items-center gap-2 rounded border border-gray-600/30 bg-gray-600/10 px-3 py-1 font-mono text-xs text-gray-300 transition-colors hover:bg-gray-600/20 hover:text-white"
+                        className="flex items-center gap-1 rounded border border-gray-600/30 bg-gray-600/10 px-2 py-0.5 font-mono text-[0.65rem] text-gray-400 transition-colors hover:bg-gray-600/20 hover:text-gray-300"
                     >
-                        <Clock className="h-3 w-3" />
+                        <Clock className="h-2.5 w-2.5 shrink-0" />
                         {timeframeLabels[timeframe]}
                     </button>
                     {dropdownOpen && (
@@ -803,7 +803,7 @@ const FunctionCallsChart = () => {
                                     setTimeframe('24h');
                                     setDropdownOpen(false);
                                 }}
-                                className={`flex w-full items-center gap-2 px-3 py-0.5 text-left font-mono text-xs transition-colors hover:bg-white/5 hover:text-white ${timeframe === '24h' ? 'text-white' : 'text-gray-300'}`}
+                                className={`flex w-full items-center gap-2 px-3 py-0.5 text-left font-mono text-[0.65rem] transition-colors hover:bg-white/5 hover:text-white ${timeframe === '24h' ? 'text-white' : 'text-gray-300'}`}
                             >
                                 Last 24 Hours
                             </button>
@@ -812,7 +812,7 @@ const FunctionCallsChart = () => {
                                     setTimeframe('7d');
                                     setDropdownOpen(false);
                                 }}
-                                className={`flex w-full items-center gap-2 px-3 py-0.5 text-left font-mono text-xs transition-colors hover:bg-white/5 hover:text-white ${timeframe === '7d' ? 'text-white' : 'text-gray-300'}`}
+                                className={`flex w-full items-center gap-2 px-3 py-0.5 text-left font-mono text-[0.65rem] transition-colors hover:bg-white/5 hover:text-white ${timeframe === '7d' ? 'text-white' : 'text-gray-300'}`}
                             >
                                 Last 7 Days
                             </button>
@@ -821,7 +821,7 @@ const FunctionCallsChart = () => {
                                     setTimeframe('30d');
                                     setDropdownOpen(false);
                                 }}
-                                className={`flex w-full items-center gap-2 px-3 py-0.5 text-left font-mono text-xs transition-colors hover:bg-white/5 hover:text-white ${timeframe === '30d' ? 'text-white' : 'text-gray-300'}`}
+                                className={`flex w-full items-center gap-2 px-3 py-0.5 text-left font-mono text-[0.65rem] transition-colors hover:bg-white/5 hover:text-white ${timeframe === '30d' ? 'text-white' : 'text-gray-300'}`}
                             >
                                 Last 30 Days
                             </button>
@@ -831,24 +831,58 @@ const FunctionCallsChart = () => {
             </div>
             <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={chartData} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+                    <CartesianGrid
+                        strokeDasharray="2 2"
+                        stroke="#374151"
+                        opacity={0.5}
+                        strokeWidth={1}
+                    />
                     <XAxis
                         dataKey="time"
                         stroke="#6B7280"
                         style={{ fontSize: '10px', fontFamily: 'monospace' }}
                         tickLine={false}
+                        axisLine={{ stroke: '#4B5563', strokeWidth: 1 }}
                     />
                     <YAxis
                         stroke="#6B7280"
                         style={{ fontSize: '10px', fontFamily: 'monospace' }}
                         tickLine={false}
                         axisLine={false}
+                        width={30}
+                    />
+                    <RechartsTooltip
+                        contentStyle={{
+                            backgroundColor: 'rgba(0, 0, 0, 0.95)',
+                            border: '1px solid rgba(107, 114, 128, 0.5)',
+                            borderRadius: '0.375rem',
+                            fontFamily: 'monospace',
+                            fontSize: '11px',
+                            padding: '8px 12px',
+                        }}
+                        labelStyle={{ color: '#9CA3AF', marginBottom: '4px' }}
+                        itemStyle={{ color: '#E5E7EB' }}
+                        cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
                     />
                     <Bar
-                        dataKey="calls"
-                        fill="#3B82F6"
-                        radius={[4, 4, 0, 0]}
-                        opacity={0.8}
+                        dataKey="errors"
+                        stackId="a"
+                        fill="#EF4444"
+                        opacity={0.7}
+                        radius={0}
+                        stroke="#DC2626"
+                        strokeWidth={1}
+                        name="Errors"
+                    />
+                    <Bar
+                        dataKey="success"
+                        stackId="a"
+                        fill="#10B981"
+                        opacity={0.7}
+                        radius={0}
+                        stroke="#059669"
+                        strokeWidth={1}
+                        name="Success"
                     />
                 </BarChart>
             </ResponsiveContainer>
