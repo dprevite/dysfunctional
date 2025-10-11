@@ -1,4 +1,4 @@
-import { Activity, Clock, FileText, LogOut, OctagonAlertIcon, Server, Settings, Terminal, User } from 'lucide-react';
+import { Activity, Clock, FileText, HardDrive, LogOut, OctagonAlertIcon, Server, Settings, Terminal, User } from 'lucide-react';
 import React from 'react';
 
 const DropdownMenu = ({ children }: { children: React.ReactNode }) => {
@@ -42,22 +42,260 @@ const DropdownMenuItem = ({ children, onClick }: any) => (
     </button>
 );
 
+// Tag Dropdown Menu Component
+const TagDropdown = ({
+    label,
+    type,
+}: {
+    label: string;
+    type: 'function' | 'runtime' | 'status';
+}) => {
+    const [open, setOpen] = React.useState(false);
+    const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(event.target as Node)
+            ) {
+                setOpen(false);
+            }
+        };
+
+        if (open) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [open]);
+
+    return (
+        <div ref={dropdownRef} className="relative">
+            <button
+                onClick={() => setOpen(!open)}
+                className="rounded border border-gray-600/30 bg-gray-600/10 px-2 py-0.5 font-mono text-xs text-gray-400 transition-colors hover:bg-gray-600/20 hover:text-gray-300"
+            >
+                {label}
+            </button>
+
+            {open && (
+                <div className="absolute left-0 top-full z-10 mt-1 w-56 rounded-md border border-gray-700/50 bg-black/95 shadow-lg shadow-black/50 backdrop-blur-sm">
+                    <button
+                        onClick={() => {
+                            console.log(`Exclude ${type}: ${label}`);
+                            setOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left font-mono text-xs text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
+                    >
+                        Exclude this {type}
+                    </button>
+                    <button
+                        onClick={() => {
+                            console.log(`Show only ${type}: ${label}`);
+                            setOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left font-mono text-xs text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
+                    >
+                        Show only this {type}
+                    </button>
+                    <div className="my-1 border-t border-gray-700/50"></div>
+                    <button
+                        onClick={() => {
+                            console.log(`View ${type} details: ${label}`);
+                            setOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left font-mono text-xs text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
+                    >
+                        View {type} details
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// Status Badge Component
+const StatusBadge = ({
+    status,
+    exitCode,
+}: {
+    status: 'running' | 'success' | 'error';
+    exitCode?: number;
+}) => {
+    const [open, setOpen] = React.useState(false);
+    const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(event.target as Node)
+            ) {
+                setOpen(false);
+            }
+        };
+
+        if (open) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [open]);
+
+    const config = {
+        running: {
+            bg: 'bg-blue-500/10',
+            text: 'text-blue-400',
+            border: 'border-blue-500/30',
+            label: 'Running',
+        },
+        success: {
+            bg: 'bg-green-500/10',
+            text: 'text-green-400',
+            border: 'border-green-500/30',
+            label: 'Exit 0',
+        },
+        error: {
+            bg: 'bg-red-500/10',
+            text: 'text-red-400',
+            border: 'border-red-500/30',
+            label: `Exit ${exitCode ?? 1}`,
+        },
+    };
+
+    const { bg, text, border, label } = config[status];
+
+    return (
+        <div ref={dropdownRef} className="relative">
+            <button
+                onClick={() => setOpen(!open)}
+                className={`rounded border px-2 py-0.5 font-mono text-xs transition-opacity hover:opacity-80 ${bg} ${text} ${border}`}
+            >
+                {label}
+            </button>
+
+            {open && (
+                <div className="absolute left-0 top-full z-10 mt-1 w-56 rounded-md border border-gray-700/50 bg-black/95 shadow-lg shadow-black/50 backdrop-blur-sm">
+                    <button
+                        onClick={() => {
+                            console.log(`Exclude status: ${status}`);
+                            setOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left font-mono text-xs text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
+                    >
+                        Exclude this status
+                    </button>
+                    <button
+                        onClick={() => {
+                            console.log(`Show only status: ${status}`);
+                            setOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left font-mono text-xs text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
+                    >
+                        Show only this status
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
+
 // Terminal Output Block Component
 const TerminalBlock = ({
     title,
-    children,
+    functionName,
+    runtime,
+    status,
+    exitCode,
+    logs,
+    logId,
 }: {
     title: string;
-    children: React.ReactNode;
-}) => (
-    <div className="overflow-hidden rounded-md border border-gray-700/50 bg-black/50 shadow-lg shadow-black/20">
-        <div className="flex items-center gap-2 border-b border-gray-700/50 bg-white/[0.02] px-4 py-2">
-            <Terminal className="h-4 w-4 text-gray-500" />
-            <span className="font-mono text-sm text-gray-400">{title}</span>
+    functionName?: string;
+    runtime?: string;
+    status: 'running' | 'success' | 'error';
+    exitCode?: number;
+    logs: Array<{ timestamp: string; message: string }>;
+    logId?: string;
+}) => {
+    const logContainerRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        if (logContainerRef.current) {
+            logContainerRef.current.scrollTop =
+                logContainerRef.current.scrollHeight;
+        }
+    }, [logs]);
+
+    const downloadLogs = () => {
+        const logText = logs
+            .map((log) => `${log.timestamp} ${log.message}`)
+            .join('\n');
+        const blob = new Blob([logText], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${logId || 'logs'}-${Date.now()}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    return (
+        <div className="overflow-hidden rounded-md border border-gray-700/50 bg-black/50 shadow-lg shadow-black/20">
+            <div className="flex items-center justify-between border-b border-gray-700/50 bg-white/[0.02] px-4 py-2">
+                <div className="flex items-center gap-3">
+                    <Terminal className="h-4 w-4 text-gray-500" />
+                    <span className="font-mono text-sm text-gray-400">
+                        {title}
+                    </span>
+                    <div className="flex items-center gap-2">
+                        {functionName && (
+                            <TagDropdown
+                                label={functionName}
+                                type="function"
+                            />
+                        )}
+                        {runtime && (
+                            <TagDropdown label={runtime} type="runtime" />
+                        )}
+                        <StatusBadge status={status} exitCode={exitCode} />
+                    </div>
+                </div>
+                <button
+                    onClick={downloadLogs}
+                    className="flex items-center gap-1.5 rounded border border-gray-600/30 bg-white/5 p-1.5 font-mono text-xs text-gray-400 transition-colors hover:bg-white/10 hover:text-gray-300"
+                    title="Download logs"
+                >
+                    <HardDrive className="h-3.5 w-3.5" />
+                </button>
+            </div>
+            <div
+                ref={logContainerRef}
+                className="max-h-64 overflow-y-auto p-4 font-mono text-xs text-gray-300"
+            >
+                {logs.map((log, index) => (
+                    <div key={index} className="group">
+                        <a
+                            href={`#log-${logId}-${index}`}
+                            id={`log-${logId}-${index}`}
+                            className="inline-block text-gray-600 transition-colors hover:text-gray-400"
+                        >
+                            {log.timestamp}
+                        </a>{' '}
+                        <span>{log.message}</span>
+                    </div>
+                ))}
+            </div>
         </div>
-        <div className="p-4 font-mono text-sm text-gray-300">{children}</div>
-    </div>
-);
+    );
+};
 
 // Stat Card Component
 const StatCard = ({ icon: Icon, label, value, status }: any) => (
@@ -103,8 +341,7 @@ export default function TerminalDashboard() {
                         </div>
                         <span className="font-mono text-xl font-bold tracking-tight text-white">
                             <span className="text-gray-400">DYS</span>
-                            <span className="text-gray-200">FUN</span>
-                            <span className="text-gray-400">CTIONAL</span>
+                            <span className="text-gray-200">FUNCTIONAL</span>
                         </span>
                     </div>
 
@@ -195,133 +432,181 @@ export default function TerminalDashboard() {
                     />
                 </div>
 
-                {/* Terminal Blocks */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <TerminalBlock title="green-perch-4 :: code-server">
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                                <span className="text-gray-600">⚙</span>
-                                <span className="text-gray-400">
-                                    Creating settings file...
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-gray-600">⚙</span>
-                                <span className="text-gray-400">
-                                    Creating machine settings file...
-                                </span>
-                            </div>
-                            <div className="mt-2 text-gray-300">
-                                Installing code-server!
-                            </div>
-                            <div className="text-gray-700">######</div>
-                            <div className="mt-2 flex items-center gap-2">
-                                <span className="text-gray-400">📦</span>
-                                <span className="text-gray-200">
-                                    code-server has been installed in
-                                    /tmp/code-server
-                                </span>
-                            </div>
-                            <div className="mt-2 flex items-center gap-2">
-                                <span className="text-gray-400">💡</span>
-                                <span className="text-gray-200">
-                                    Running code-server in the background...
-                                </span>
-                            </div>
-                            <div className="mt-1 text-gray-400">
-                                Check logs at /tmp/code-server.log!
-                            </div>
-                        </div>
-                    </TerminalBlock>
+                {/* Full Width Terminal Block - Successful Run */}
+                <TerminalBlock
+                    title="Docker Container :: musing_solomon1"
+                    functionName="docker-provision"
+                    runtime="node-20"
+                    status="success"
+                    exitCode={0}
+                    logId="docker-provision-001"
+                    logs={[
+                        {
+                            timestamp: '2025-10-11T19:29:21.123Z',
+                            message:
+                                '[INFO] Container started successfully',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:29:21.456Z',
+                            message:
+                                '[INFO] Provisioning Docker containers as functions',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:29:22.001Z',
+                            message:
+                                '[SYSTEM] Active version: musing_solomon1 | 7:29:25 PM',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:29:22.234Z',
+                            message: '[INFO] Used by: 0 developers | Build time: 2.3s',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:29:22.567Z',
+                            message:
+                                '[STATUS] Last updated: a few seconds ago | Created by: dprevite',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:29:23.001Z',
+                            message: '[INFO] Connecting to Docker daemon...',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:29:23.345Z',
+                            message: '[INFO] Docker daemon connected successfully',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:29:23.678Z',
+                            message: '[INFO] Pulling image: node:20-alpine',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:29:24.123Z',
+                            message: '[INFO] Image pulled successfully',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:29:24.456Z',
+                            message: '[INFO] Creating container with id: abc123def456',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:29:24.789Z',
+                            message: '[INFO] Container created successfully',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:29:25.001Z',
+                            message: '[INFO] Starting container...',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:29:25.234Z',
+                            message: '[SUCCESS] Container is now running',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:29:25.567Z',
+                            message: '[INFO] Health check passed',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:29:25.890Z',
+                            message: '[INFO] Function ready to accept requests',
+                        },
+                    ]}
+                />
 
-                    <TerminalBlock title="System Metrics :: Real-time">
-                        <div className="space-y-2">
-                            <div className="flex justify-between">
-                                <span className="text-gray-500">
-                                    CPU Cores:
-                                </span>
-                                <span className="text-gray-200">
-                                    0.108 / 126 cores (1%)
-                                </span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500">
-                                    RAM Usage:
-                                </span>
-                                <span className="text-gray-200">
-                                    0.148 GiB / 73.1 GiB
-                                </span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500">
-                                    Disk Space:
-                                </span>
-                                <span className="text-gray-200">
-                                    1401/3608 GiB (39%)
-                                </span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500">
-                                    Load Average:
-                                </span>
-                                <span className="text-gray-200">0.01</span>
-                            </div>
-                            <div className="mt-4 flex justify-between">
-                                <span className="text-gray-500">Uptime:</span>
-                                <span className="text-gray-200">1ms</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500">
-                                    Build Time:
-                                </span>
-                                <span className="text-gray-200">31.38s</span>
-                            </div>
-                        </div>
-                    </TerminalBlock>
-                </div>
+                {/* Terminal Block - Running */}
+                <TerminalBlock
+                    title="Image Processing :: generate-thumbnail"
+                    functionName="process-image"
+                    runtime="python-3.11"
+                    status="running"
+                    logId="image-process-002"
+                    logs={[
+                        {
+                            timestamp: '2025-10-11T19:30:01.123Z',
+                            message: '[INFO] Starting image processing pipeline',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:30:01.456Z',
+                            message: '[INFO] Loading image from S3: images/photo.jpg',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:30:02.001Z',
+                            message: '[INFO] Image loaded: 4032x3024 pixels (12.2 MB)',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:30:02.234Z',
+                            message: '[INFO] Applying thumbnail transformation',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:30:02.567Z',
+                            message: '[INFO] Resizing to 800x600',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:30:03.001Z',
+                            message: '[INFO] Optimizing image quality',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:30:03.345Z',
+                            message: '[INFO] Processing... 45% complete',
+                        },
+                    ]}
+                />
 
-                {/* Full Width Terminal Block */}
-                <TerminalBlock title="Docker Container :: musing_solomon1">
-                    <div className="space-y-1 text-xs">
-                        <div className="text-gray-300">
-                            <span className="font-semibold text-green-400">
-                                [INFO]
-                            </span>{' '}
-                            Container started successfully
-                        </div>
-                        <div className="text-gray-300">
-                            <span className="font-semibold text-green-400">
-                                [INFO]
-                            </span>{' '}
-                            Provisioning Docker containers as Coder workspaces
-                        </div>
-                        <div className="text-gray-200">
-                            <span className="font-semibold text-gray-400">
-                                [SYSTEM]
-                            </span>{' '}
-                            Active version: musing_solomon1 | 7:29:25 PM
-                        </div>
-                        <div className="text-gray-300">
-                            <span className="font-semibold text-green-400">
-                                [INFO]
-                            </span>{' '}
-                            Used by: 0 developers | Build time: Unknown
-                        </div>
-                        <div className="text-gray-200">
-                            <span className="font-semibold text-gray-400">
-                                [STATUS]
-                            </span>{' '}
-                            Last updated: a few seconds ago | Created by:
-                            dprevite
-                        </div>
-                        <div className="mt-3 flex gap-4 border-t border-gray-700/30 pt-2">
-                            <span className="font-semibold text-green-400">
-                                ● Active
-                            </span>
-                            <span className="text-gray-400">● Newest</span>
-                        </div>
-                    </div>
-                </TerminalBlock>
+                {/* Terminal Block - Error */}
+                <TerminalBlock
+                    title="Database Migration :: migrate-users"
+                    functionName="db-migrate"
+                    runtime="node-18"
+                    status="error"
+                    exitCode={1}
+                    logId="db-migrate-003"
+                    logs={[
+                        {
+                            timestamp: '2025-10-11T19:28:01.123Z',
+                            message: '[INFO] Starting database migration',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:28:01.456Z',
+                            message: '[INFO] Connecting to database: postgres://prod-db',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:28:02.001Z',
+                            message: '[INFO] Connection established',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:28:02.234Z',
+                            message: '[INFO] Reading migration files...',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:28:02.567Z',
+                            message: '[INFO] Found 3 pending migrations',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:28:03.001Z',
+                            message: '[INFO] Running migration: 001_create_users_table.sql',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:28:03.345Z',
+                            message: '[INFO] Migration 001 completed successfully',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:28:03.678Z',
+                            message: '[INFO] Running migration: 002_add_email_column.sql',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:28:04.123Z',
+                            message:
+                                '[ERROR] Duplicate column name \'email\' in table \'users\'',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:28:04.456Z',
+                            message: '[ERROR] Migration failed: Constraint violation',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:28:04.789Z',
+                            message: '[ERROR] Rolling back changes...',
+                        },
+                        {
+                            timestamp: '2025-10-11T19:28:05.001Z',
+                            message: '[ERROR] Process exited with code 1',
+                        },
+                    ]}
+                />
             </main>
 
             {/* Fixed Status Bar */}
