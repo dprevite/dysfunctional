@@ -1,4 +1,5 @@
 import { Book, Github, LayoutDashboard, Code2, Cpu, Activity, FileText, Terminal } from 'lucide-react';
+import { Link } from '@inertiajs/react';
 import {
     Sidebar,
     SidebarContent,
@@ -15,27 +16,27 @@ import {
 const menuItems = [
     {
         title: 'Dashboard',
-        url: '#',
+        url: '/dashboard',
         icon: LayoutDashboard,
     },
     {
         title: 'Functions',
-        url: '#',
+        url: '/functions',
         icon: Code2,
     },
     {
         title: 'Runtimes',
-        url: '#',
+        url: '/runtimes',
         icon: Cpu,
     },
     {
         title: 'Analytics',
-        url: '#',
+        url: '/analytics',
         icon: Activity,
     },
     {
         title: 'Logs',
-        url: '#',
+        url: '/logs',
         icon: FileText,
     },
 ];
@@ -45,11 +46,13 @@ const footerItems = [
         title: 'GitHub',
         url: 'https://github.com/dprevite/dysfunctional',
         icon: Github,
+        external: true,
     },
     {
         title: 'Documentation',
-        url: '#',
+        url: '/documentation',
         icon: Book,
+        external: false,
     },
 ];
 
@@ -60,7 +63,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <a href="#" className="flex items-center gap-2 font-mono">
+                            <Link href="/dashboard" className="flex items-center gap-2 font-mono">
                                 <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-white/5">
                                     <Terminal className="size-4 text-gray-400" />
                                 </div>
@@ -70,7 +73,7 @@ export function AppSidebar() {
                                         <span className="text-gray-200">FUNCTIONAL</span>
                                     </span>
                                 </div>
-                            </a>
+                            </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
@@ -82,13 +85,13 @@ export function AppSidebar() {
                             {menuItems.map((item) => (
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton asChild>
-                                        <a href={item.url} className="group relative font-mono text-xs text-gray-400 hover:text-white">
+                                        <Link href={item.url} className="group relative font-mono text-xs text-gray-400 hover:text-white">
                                             <item.icon className="h-3.5 w-3.5" />
                                             <span className="relative inline-flex items-center">
                                                 {item.title}
                                                 <span className="absolute left-full ml-0 hidden h-0.5 w-1.5 translate-y-1 bg-gray-500/60 group-hover:inline-block group-hover:animate-blink"></span>
                                             </span>
-                                        </a>
+                                        </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             ))}
@@ -101,10 +104,17 @@ export function AppSidebar() {
                     {footerItems.map((item) => (
                         <SidebarMenuItem key={item.title}>
                             <SidebarMenuButton asChild size="sm">
-                                <a href={item.url} target="_blank" rel="noopener noreferrer" className="font-mono text-gray-500 hover:text-gray-400">
-                                    <item.icon className="h-3 w-3" />
-                                    <span className="text-xs">{item.title}</span>
-                                </a>
+                                {item.external ? (
+                                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="font-mono text-gray-500 hover:text-gray-400">
+                                        <item.icon className="h-3 w-3" />
+                                        <span className="text-xs">{item.title}</span>
+                                    </a>
+                                ) : (
+                                    <Link href={item.url} className="font-mono text-gray-500 hover:text-gray-400">
+                                        <item.icon className="h-3 w-3" />
+                                        <span className="text-xs">{item.title}</span>
+                                    </Link>
+                                )}
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     ))}

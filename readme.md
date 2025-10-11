@@ -5,6 +5,8 @@ Create URLs that execute code in Docker containers and get the result.
 Perfect for webhooks, serverless functions, and other scenarios
 where you want to run code on demand without managing servers.
 
+![Dashboard Screenshot](dashboard-screenshot.png)
+
 ## Features
 
 - Customizable routes

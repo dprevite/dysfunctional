@@ -51,9 +51,25 @@ ENV PATH=/app/vendor/bin:$PATH
 # Development stage
 FROM base AS development
 
-# Install development tools and add shell aliases
+# Install development tools, Playwright dependencies, and add shell aliases
 RUN apt-get update && \
-	apt-get install -y tree && \
+	apt-get install -y \
+		tree \
+		procps \
+		libgtk-4-1 \
+		libgraphene-1.0-0 \
+		libwoff2-1.0.2 \
+		libevent-2.1-7 \
+		gstreamer1.0-plugins-base \
+		gstreamer1.0-plugins-good \
+		gstreamer1.0-plugins-bad \
+		gstreamer1.0-libav \
+		libavif16 \
+		libharfbuzz-icu0 \
+		libenchant-2-2 \
+		libsecret-1-0 \
+		libhyphen0 \
+		libmanette-0.2-0 && \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists/* && \
 	echo 'alias ll="ls -al"' >> /etc/bash.bashrc && \
@@ -75,6 +91,8 @@ RUN pecl install xdebug \
 
 # Copy Xdebug configuration
 COPY .container/php/conf.d/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+
+RUN git config --global --add safe.directory /app
 
 WORKDIR /app
 

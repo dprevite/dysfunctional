@@ -27,17 +27,6 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - prettier (PRETTIER) - v3
 
 
-## Docker Environment
-- This application runs in Docker containers via Docker Compose.
-- **ALWAYS** use `docker compose exec dysfunctional.test` to prefix PHP and Artisan commands.
-- **ALWAYS** use `docker compose exec dysfunctional.test` to prefix npm commands.
-- Examples:
-  - `docker compose exec dysfunctional.test php artisan make:model Post`
-  - `docker compose exec dysfunctional.test npm run build`
-  - `docker compose exec dysfunctional.test vendor/bin/pint`
-  - `docker compose exec dysfunctional.test php artisan test`
-- Do NOT run PHP, Artisan, npm, or composer commands directly on the host system.
-
 ## Conventions
 - You must follow all existing code conventions used in this application. When creating or editing a file, check sibling files for the correct structure, approach, naming.
 - Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
@@ -95,32 +84,6 @@ This application is a Laravel application and its main Laravel ecosystems packag
 3. Quoted Phrases (Exact Position) - query="infinite scroll" - Words must be adjacent and in that order
 4. Mixed Queries - query=middleware "rate limit" - "middleware" AND exact phrase "rate limit"
 5. Multiple Queries - queries=["authentication", "middleware"] - ANY of these terms
-
-## MCP Server Documentation Tools
-- This application has access to multiple MCP servers with specialized documentation tools. **Always use the appropriate MCP server for documentation lookups.**
-
-### Laravel Boost MCP Server (`laravel-boost`)
-- Use `search-docs` from Laravel Boost for all Laravel ecosystem packages (Laravel, Inertia, Pest, Tailwind, Livewire, Filament, etc.)
-- This returns version-specific documentation matching your installed packages
-- **Always prefer this for Laravel-related documentation**
-
-### Context7 MCP Server (`context7`)
-- Use Context7 for non-Laravel libraries and general programming packages
-- First call `resolve-library-id` with the library name to get the Context7-compatible library ID
-- Then call `get-library-docs` with the library ID to retrieve documentation
-- Use this for libraries like React, Node.js packages, Python packages, etc.
-- Context7 provides up-to-date documentation and code examples from official sources
-
-### JetBrains MCP Server (`jetbrains`)
-- Use JetBrains tools for IDE-specific operations like running tests, analyzing code problems, searching files
-- Do not use this for documentation lookups - use Laravel Boost or Context7 instead
-
-### Documentation Lookup Priority
-1. **Laravel ecosystem packages** → Use `search-docs` from Laravel Boost
-2. **Non-Laravel libraries** → Use Context7 (`resolve-library-id` then `get-library-docs`)
-3. **Only as last resort** → Web search or web fetch
-
-This ensures you always get accurate, version-specific documentation from authoritative sources.
 
 
 === php rules ===
