@@ -1,0 +1,3 @@
+language: bash
+version: 3.18
+platform: alpine

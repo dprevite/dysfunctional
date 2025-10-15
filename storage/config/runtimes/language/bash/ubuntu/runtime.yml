@@ -1,0 +1,3 @@
+language: bash
+version: latest
+platform: ubuntu
