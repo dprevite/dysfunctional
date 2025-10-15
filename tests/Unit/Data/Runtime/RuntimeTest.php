@@ -8,7 +8,7 @@ test(
     description: 'can parse function yaml',
     closure: function (): void {
         $contents = file_get_contents(
-            filename: __DIR__ . '/function.yml'
+            filename: __DIR__ . '/runtime.yml'
         );
 
         $result = Yaml::parse($contents);
