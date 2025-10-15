@@ -35,6 +35,23 @@ if [ "$APP_ENV" = "local" ] || [ "$APP_ENV" = "development" ]; then
     echo "Fixing Laravel directory permissions..."
     chown -R www-data:www-data /app/storage /app/bootstrap/cache 2>/dev/null || true
     chmod -R 775 /app/storage /app/bootstrap/cache 2>/dev/null || true
+
+    # Add www-data to docker group if docker socket is mounted
+    if [ -S /var/run/docker.sock ]; then
+        DOCKER_SOCKET_GID=$(stat -c '%g' /var/run/docker.sock)
+        echo "Docker socket detected with GID $DOCKER_SOCKET_GID"
+
+        # Check if group with this GID exists
+        if ! getent group "$DOCKER_SOCKET_GID" > /dev/null 2>&1; then
+            # Create docker group with the host's docker GID
+            groupadd -g "$DOCKER_SOCKET_GID" docker
+            echo "Created docker group with GID $DOCKER_SOCKET_GID"
+        fi
+
+        # Add www-data to the docker group
+        usermod -aG "$DOCKER_SOCKET_GID" www-data
+        echo "Added www-data to docker group (GID $DOCKER_SOCKET_GID)"
+    fi
 fi
 
 # If we're root, drop down to www-data for the actual command
