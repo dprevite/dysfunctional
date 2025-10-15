@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Scan;
 
-use Exception;
+use App\Actions\Scan\FunctionScanner;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use Symfony\Component\Yaml\Yaml;
 
 /**
  * Scan and list all function definitions in the functions directory.
  */
-final class Functions extends Scan
+final class Functions extends Command
 {
     /**
      * The name and signature of the console command.
@@ -31,61 +31,39 @@ final class Functions extends Scan
     protected $description = 'Scan and list all function definitions in the functions directory';
 
     /**
-     * Get the default path to scan.
+     * Execute the console command.
      */
-    protected function getDefaultPath(): string
+    public function handle(): int
     {
-        return storage_path('config/functions');
-    }
+        $scanner = new FunctionScanner(
+            validate: $this->option('validate')
+        );
 
-    /**
-     * Get the config file name to search for.
-     */
-    protected function getConfigFileName(): string
-    {
-        return 'function.yml';
-    }
+        $path = $this->option('path');
 
-    /**
-     * Parse and extract function metadata from a YAML file.
-     *
-     * @return array<string, mixed>|null Function metadata array or null on error
-     */
-    protected function processFile(string $filePath, string $basePath): ?array
-    {
-        try {
-            $content = File::get($filePath);
-            $data = Yaml::parse($content);
+        if ($path && ! File::isDirectory($path)) {
+            $this->error("Directory not found: {$path}");
 
-            if (! is_array($data)) {
-                $this->error("Invalid YAML in {$filePath}");
-
-                return null;
-            }
-
-            $relativePath = str_replace($basePath . '/', '', dirname($filePath));
-
-            $function = [
-                'path' => $relativePath,
-                'file' => $filePath,
-                'name' => $data['function']['name'] ?? 'Unknown',
-                'description' => $data['function']['description'] ?? '',
-                'route' => $data['function']['route'] ?? '',
-                'method' => $data['function']['method'] ?? '',
-                'runtime' => $data['function']['runtime'] ?? '',
-                'entrypoint' => $data['function']['entrypoint'] ?? '',
-            ];
-
-            if ($this->option('validate')) {
-                $this->validateFunction($data, $filePath);
-            }
-
-            return $function;
-        } catch (Exception $e) {
-            $this->error("Error processing {$filePath}: " . $e->getMessage());
-
-            return null;
+            return self::FAILURE;
         }
+
+        $results = $scanner->scan($path);
+
+        if (empty($results)) {
+            $this->warn(sprintf('No function configs found in %s.', $path ?? storage_path('config/functions')));
+
+            return self::SUCCESS;
+        }
+
+        $this->info('Found ' . count($results) . " function(s):\n");
+
+        if ($this->option('json')) {
+            $this->line(json_encode($results, JSON_PRETTY_PRINT));
+        } else {
+            $this->displayResults($results);
+        }
+
+        return self::SUCCESS;
     }
 
     /**
@@ -107,46 +85,21 @@ final class Functions extends Scan
         $this->table($headers, $rows);
 
         if ($this->option('validate')) {
-            $this->newLine();
-            $this->info('✓ Validation complete');
-        }
-    }
-
-    /**
-     * Validate function definition against schema requirements.
-     *
-     * @param  array<string, mixed>  $data  Parsed YAML data
-     */
-    protected function validateFunction(array $data, string $filePath): void
-    {
-        $errors = [];
-
-        if (! isset($data['function'])) {
-            $errors[] = "Missing 'function' section";
-        } else {
-            $required = ['name', 'description', 'route', 'method', 'runtime', 'entrypoint'];
-            foreach ($required as $field) {
-                if (! isset($data['function'][$field])) {
-                    $errors[] = "Missing required field: function.{$field}";
+            $hasErrors = false;
+            foreach ($results as $result) {
+                if (! empty($result['validation_errors'])) {
+                    $hasErrors = true;
+                    $this->newLine();
+                    $this->warn("Validation errors in {$result['file']}:");
+                    foreach ($result['validation_errors'] as $error) {
+                        $this->line("  • {$error}");
+                    }
                 }
             }
 
-            if (isset($data['function']['route']) && ! str_starts_with($data['function']['route'], '/')) {
-                $errors[] = "Route must start with '/'";
-            }
-
-            if (isset($data['function']['method'])) {
-                $validMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'];
-                if (! in_array($data['function']['method'], $validMethods)) {
-                    $errors[] = "Invalid HTTP method: {$data['function']['method']}";
-                }
-            }
-        }
-
-        if (! empty($errors)) {
-            $this->warn("Validation errors in {$filePath}:");
-            foreach ($errors as $error) {
-                $this->line("  • {$error}");
+            if (! $hasErrors) {
+                $this->newLine();
+                $this->info('✓ Validation complete');
             }
         }
     }

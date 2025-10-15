@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Scan;
 
-use Exception;
+use App\Actions\Scan\RuntimeScanner;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use Symfony\Component\Yaml\Yaml;
 
 /**
  * Scan and list all runtime config definitions.
  */
-final class Runtimes extends Scan
+final class Runtimes extends Command
 {
     /**
      * The name and signature of the console command.
@@ -31,58 +31,39 @@ final class Runtimes extends Scan
     protected $description = 'Scan and list all runtime definitions in the runtimes directory';
 
     /**
-     * Get the default path to scan.
+     * Execute the console command.
      */
-    protected function getDefaultPath(): string
+    public function handle(): int
     {
-        return storage_path('config/runtimes');
-    }
+        $scanner = new RuntimeScanner(
+            validate: $this->option('validate')
+        );
 
-    /**
-     * Get the config file name to search for.
-     */
-    protected function getConfigFileName(): string
-    {
-        return 'runtime.yml';
-    }
+        $path = $this->option('path');
 
-    /**
-     * Parse and extract runtime metadata from a YAML file.
-     *
-     * @return array<string, mixed>|null Runtime metadata array or null on error
-     */
-    protected function processFile(string $filePath, string $basePath): ?array
-    {
-        try {
-            $content = File::get($filePath);
-            $data = Yaml::parse($content);
+        if ($path && ! File::isDirectory($path)) {
+            $this->error("Directory not found: {$path}");
 
-            if (! is_array($data)) {
-                $this->error("Invalid YAML in {$filePath}");
-
-                return null;
-            }
-
-            $relativePath = str_replace($basePath . '/', '', dirname($filePath));
-
-            $runtime = [
-                'path' => $relativePath,
-                'file' => $filePath,
-                'language' => $data['language'] ?? 'Unknown',
-                'version' => $data['version'] ?? '',
-                'platform' => $data['platform'] ?? '',
-            ];
-
-            if ($this->option('validate')) {
-                $this->validateRuntime($data, $filePath);
-            }
-
-            return $runtime;
-        } catch (Exception $e) {
-            $this->error("Error processing {$filePath}: " . $e->getMessage());
-
-            return null;
+            return self::FAILURE;
         }
+
+        $results = $scanner->scan($path);
+
+        if (empty($results)) {
+            $this->warn(sprintf('No runtime configs found in %s.', $path ?? storage_path('config/runtimes')));
+
+            return self::SUCCESS;
+        }
+
+        $this->info('Found ' . count($results) . " runtime(s):\n");
+
+        if ($this->option('json')) {
+            $this->line(json_encode($results, JSON_PRETTY_PRINT));
+        } else {
+            $this->displayResults($results);
+        }
+
+        return self::SUCCESS;
     }
 
     /**
@@ -103,31 +84,21 @@ final class Runtimes extends Scan
         $this->table($headers, $rows);
 
         if ($this->option('validate')) {
-            $this->newLine();
-            $this->info('✓ Validation complete');
-        }
-    }
-
-    /**
-     * Validate runtime definition against schema requirements.
-     *
-     * @param  array<string, mixed>  $data  Parsed YAML data
-     */
-    protected function validateRuntime(array $data, string $filePath): void
-    {
-        $errors = [];
-
-        $required = ['language', 'platform'];
-        foreach ($required as $field) {
-            if (! isset($data[$field])) {
-                $errors[] = "Missing required field: {$field}";
+            $hasErrors = false;
+            foreach ($results as $result) {
+                if (! empty($result['validation_errors'])) {
+                    $hasErrors = true;
+                    $this->newLine();
+                    $this->warn("Validation errors in {$result['file']}:");
+                    foreach ($result['validation_errors'] as $error) {
+                        $this->line("  • {$error}");
+                    }
+                }
             }
-        }
 
-        if (! empty($errors)) {
-            $this->warn("Validation errors in {$filePath}:");
-            foreach ($errors as $error) {
-                $this->line("  • {$error}");
+            if (! $hasErrors) {
+                $this->newLine();
+                $this->info('✓ Validation complete');
             }
         }
     }
