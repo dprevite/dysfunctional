@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Scan;
 
+use App\Data\Config\Config;
 use FilesystemIterator;
 use Illuminate\Support\Facades\File;
 use RecursiveDirectoryIterator;
@@ -17,14 +18,14 @@ abstract class Scanner
     /**
      * Scan a directory and process all matching config files.
      *
-     * @param string|null $path Custom path to scan (null uses default)
+     * @param  string|null  $path  Custom path to scan (null uses default)
      * @return array<int, array<string, mixed>> Array of processed config data
      */
     public function scan(?string $path = null): array
     {
         $scanPath = $path ?? $this->getDefaultPath();
 
-        if (!File::isDirectory($scanPath)) {
+        if (! File::isDirectory($scanPath)) {
             return [];
         }
 
@@ -80,8 +81,6 @@ abstract class Scanner
 
     /**
      * Parse and extract metadata from a config file.
-     *
-     * @return array<string, mixed>|null Config metadata array or null on error
      */
-    abstract protected function process(string $filePath, string $basePath): ?array;
+    abstract protected function process(string $filePath, string $basePath): ?Config;
 }

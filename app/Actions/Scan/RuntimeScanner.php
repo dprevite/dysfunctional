@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace App\Actions\Scan;
 
-use Exception;
+use App\Data\Config\Config;
+use App\Data\Config\RuntimeConfig;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\Yaml\Yaml;
 
 /**
  * Scan and process runtime config definitions.
  */
-final class RuntimeScanner extends Scanner
+class RuntimeScanner extends Scanner
 {
     public function __construct(
         protected bool $validate = false
-    )
-    {
-    }
+    ) {}
 
     /**
      * Get the default path to scan.
@@ -37,43 +36,32 @@ final class RuntimeScanner extends Scanner
 
     /**
      * Parse and extract runtime metadata from a YAML file.
-     *
-     * @return array<string, mixed>|null Runtime metadata array or null on error
      */
-    protected function process(string $filePath, string $basePath): ?array
+    protected function process(string $filePath, string $basePath): ?Config
     {
-        try {
-            $content = File::get($filePath);
-            $data = Yaml::parse($content);
+        $data = Yaml::parse(File::get($filePath));
 
-            if (!is_array($data)) {
-                return null;
-            }
+        $relativePath = str_replace($basePath . '/', '', dirname($filePath));
 
-            $relativePath = str_replace($basePath . '/', '', dirname($filePath));
+        $runtime = [
+            'path' => $relativePath,
+            'file' => $filePath,
+            'language' => $data['language'] ?? 'Unknown',
+            'version' => $data['version'] ?? '',
+            'platform' => $data['platform'] ?? '',
+        ];
 
-            $runtime = [
-                'path' => $relativePath,
-                'file' => $filePath,
-                'language' => $data['language'] ?? 'Unknown',
-                'version' => $data['version'] ?? '',
-                'platform' => $data['platform'] ?? '',
-            ];
-
-            if ($this->validate) {
-                $runtime['validation_errors'] = $this->validate($data);
-            }
-
-            return $runtime;
-        } catch (Exception) {
-            return null;
+        if ($this->validate) {
+            $runtime['validation_errors'] = $this->validate($data);
         }
+
+        return RuntimeConfig::from($runtime);
     }
 
     /**
      * Validate runtime definition against schema requirements.
      *
-     * @param array<string, mixed> $data Parsed YAML data
+     * @param  array<string, mixed>  $data  Parsed YAML data
      * @return string[] Array of validation error messages
      */
     protected function validate(array $data): array
@@ -82,7 +70,7 @@ final class RuntimeScanner extends Scanner
 
         $required = ['language', 'platform'];
         foreach ($required as $field) {
-            if (!isset($data[$field])) {
+            if (! isset($data[$field])) {
                 $errors[] = "Missing required field: {$field}";
             }
         }

@@ -1,15 +1,9 @@
 # yaml-language-server: $schema=../../../schemas/function.schema.json
 
 function:
-  name: Something
+  name: Handle a POST request
   description: This is a sample function
-  route: /something
-  method: GET
-  runtime: php:8.4
+  route: /test
+  method: POST
+  runtime: language/php/serversideup/8.4/cli
   entrypoint: entrypoint.php
-
-docker:
-  volumes:
-    - ./cache:/cache
-  labels:
-    - "dysfunctional"

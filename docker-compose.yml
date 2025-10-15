@@ -1,5 +1,5 @@
 services:
-  dysfunctional:
+  dysfunctional-staging:
     build:
       target: development
       context: .
@@ -10,6 +10,7 @@ services:
       - HOST_UID=${HOST_UID:-1000}
       - HOST_GID=${HOST_GID:-1000}
       - APP_ENV=${APP_ENV:-local}
+      - HOST_PATH=${PWD}
     volumes:
       - .:/app
       - /var/run/docker.sock:/var/run/docker.sock

@@ -7,6 +7,19 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 
+if (! function_exists('loadRoutesFromDirectory')) {
+    function loadRoutesFromDirectory(string $path, string $middleware): void
+    {
+        if (is_dir($path)) {
+            foreach (glob("{$path}/*.php") as $routeFile) {
+                Route::middleware($middleware)->group($routeFile);
+            }
+        } elseif (file_exists("{$path}.php")) {
+            Route::middleware($middleware)->group("{$path}.php");
+        }
+    }
+}
+
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         using: function () {
@@ -28,14 +41,3 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
-
-function loadRoutesFromDirectory(string $path, string $middleware): void
-{
-    if (is_dir($path)) {
-        foreach (glob("{$path}/*.php") as $routeFile) {
-            Route::middleware($middleware)->group($routeFile);
-        }
-    } elseif (file_exists("{$path}.php")) {
-        Route::middleware($middleware)->group("{$path}.php");
-    }
-}
