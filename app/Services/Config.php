@@ -7,6 +7,7 @@ use App\Actions\Scan\RuntimeScanner;
 use App\Data\Config\FunctionConfig;
 use App\Data\Config\RuntimeConfig;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Uri;
 
 class Config
 {
@@ -53,5 +54,56 @@ class Config
     public function function(string $path): ?FunctionConfig
     {
         return collect($this->functions())->firstWhere('path', $path);
+    }
+
+    /**
+     * Find a function based on the current route
+     */
+    public function functionMatchingRoute(string $method, Uri $uri): ?FunctionConfig
+    {
+        $requestPath = preg_replace('/^\/?run/', '', $uri->path());
+        $method = strtoupper($method);
+
+        $functions = $this->functions();
+
+        foreach ($functions as $function) {
+            if (strtoupper($function->method) === $method && $this->matchesRoute($function->route, $requestPath)) {
+                return $function;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if a route pattern matches the request path
+     */
+    protected function matchesRoute(string $routePattern, string $requestPath): bool
+    {
+        // Remove leading/trailing slashes for comparison
+        $routePattern = trim($routePattern, '/');
+        $requestPath = trim($requestPath, '/');
+
+        // Exact match
+        if ($routePattern === $requestPath) {
+            return true;
+        }
+
+        // Convert route parameters like {id} or {param} to regex pattern
+        // This handles Laravel-style route parameters
+        $pattern = preg_replace('/\{[^}]+\}/', '([^/]+)', $routePattern);
+
+        // Handle optional parameters like {param?}
+        $pattern = str_replace('?}', '}?', $pattern);
+        $pattern = preg_replace('/\{[^}]+\}\?/', '([^/]*)', $pattern);
+
+        // Handle wildcard routes (e.g., admin/*)
+        $pattern = str_replace('*', '.*', $pattern);
+
+        // Build the final regex pattern
+        $pattern = '#^' . $pattern . '$#';
+
+        // Test the pattern against the request path
+        return (bool) preg_match($pattern, $requestPath);
     }
 }
