@@ -15,6 +15,7 @@ services:
       - .:/app
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
+    tty: true
     labels:
       - 'tsbridge.enabled=true'
       - 'tsbridge.service.name=dysfunctional-staging'
