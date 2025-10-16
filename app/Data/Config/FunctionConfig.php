@@ -18,6 +18,8 @@ class FunctionConfig extends Config
         public readonly string $entrypoint,
         public readonly ?array $validationErrors = null,
         public readonly ?array $docker = null,
+        public readonly ?array $environment = null,
+        public readonly ?array $schedule = null,
     )
     {
     }
@@ -26,21 +28,29 @@ class FunctionConfig extends Config
     {
         $config = app(ConfigService::class);
 
-        return $config->runtime('language/php/serversideup/8.4/cli');
+        return $config->runtime($this->runtime);
     }
 
     public function getEntrypoint(): ?string
     {
-        $path = storage_path('config/functions/' . $this->path . '/' . $this->entrypoint);
+        return $this->getBasePath() . '/' . $this->entrypoint;
+    }
 
-        if (!file_exists($path)) {
-            return null;
-        }
+    public function getBasePath(): string
+    {
+        $path = storage_path('config/functions/' . $this->path);
 
         if (str_starts_with($path, '/app')) {
             $path = substr($path, 4);
         }
 
         return $path;
+    }
+
+    public function getRawYaml(): ?string
+    {
+        return file_get_contents(
+            base_path($this->getBasePath() . '/function.yml')
+        );
     }
 }

@@ -14,7 +14,10 @@ class RuntimeConfig extends Config
         public readonly string $language,
         public readonly string $version,
         public readonly string $platform,
-    ) {}
+        public readonly ?array $build = null,
+    )
+    {
+    }
 
     public function getDockerFile(): string
     {
