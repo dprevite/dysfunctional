@@ -34,4 +34,36 @@ class Variable extends Model
             'is_secret' => 'boolean',
         ];
     }
+
+    public static function findByMatchingPath(string $path): array
+    {
+        $variables = self::where('path', $path)
+            ->orderBy('type', 'asc')
+            ->get();
+
+        $result = [
+            'secrets' => [],
+            'variables' => [],
+        ];
+
+        $processedNames = [];
+
+        foreach ($variables as $variable) {
+            // Skip if we've already processed this name with higher priority
+            if (isset($processedNames[$variable->name])) {
+                continue;
+            }
+
+            // Mark this name as processed
+            $processedNames[$variable->name] = true;
+
+            if ($variable->is_secret) {
+                $result['secrets'][$variable->name] = $variable->value;
+            } else {
+                $result['variables'][$variable->name] = $variable->value;
+            }
+        }
+
+        return $result;
+    }
 }

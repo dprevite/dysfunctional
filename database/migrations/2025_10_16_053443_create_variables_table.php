@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('variables', function (Blueprint $table) {
             $table->id();
             $table->string('path')->index();
-            $table->string('type');
+            $table->string('type'); // `function` or `runtime`
             $table->string('name');
             $table->text('value');
             $table->boolean('is_secret')->default(false);
