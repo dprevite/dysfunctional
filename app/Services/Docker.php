@@ -15,7 +15,10 @@ class Docker
      */
     public function processes(): array
     {
-        $result = Process::run('docker ps --format "{{json .}}"');
+        $result = Process::run(
+            'docker ps --format "{{json .}}"'
+        )
+            ->throw();
 
         if (!$result->successful()) {
             return [];
@@ -68,7 +71,9 @@ class Docker
      */
     public function getImage(string $name): ?array
     {
-        $result = Process::run("docker image inspect {$name}");
+        $result = Process::run(
+            "docker image inspect {$name}"
+        );
 
         if (!$result->successful()) {
             return null;
@@ -96,7 +101,10 @@ class Docker
      */
     public function getContainer(string $name): ?array
     {
-        $result = Process::run("docker container inspect {$name}");
+        $result = Process::run(
+            "docker container inspect {$name}"
+        )
+            ->throw();
 
         if (!$result->successful()) {
             return null;
@@ -122,13 +130,25 @@ class Docker
      */
     public function buildImage(RuntimeConfig $runtimeConfig): ProcessResult
     {
-        $tag = $runtimeConfig->getDockerImageTag();
-        $buildPath = storage_path("config/runtimes/{$runtimeConfig->path}");
+        $command = sprintf(
+            'docker build -t %s %s %s',
+            escapeshellarg($runtimeConfig->getDockerImageTag()),
+            $this->getBuildArgs($runtimeConfig),
+            escapeshellarg(storage_path("config/runtimes/{$runtimeConfig->path}"))
+        );
 
         return Process::env([
-            'DOCKER_CONFIG' => '/tmp/.docker',
+            'DOCKER_CONFIG' => '/tmp/.docker', // TODO: Why is this here
         ])
-            ->run("docker build -t {$tag} {$buildPath}")
+            ->run($command)
             ->throw();
+    }
+
+    private function getBuildArgs(RuntimeConfig $runtime)
+    {
+        return collect($runtime->build['args'] ?? [])
+            ->map(fn($value, $key) => '--build-arg ' . $key . '=' . escapeshellarg($value))
+            ->values()
+            ->implode(' ');
     }
 }
