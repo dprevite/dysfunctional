@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Scan;
 
 use App\Data\Config\FunctionConfig;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\Yaml\Yaml;
 
@@ -15,7 +16,9 @@ class FunctionScanner extends Scanner
 {
     public function __construct(
         protected bool $validate = false
-    ) {}
+    )
+    {
+    }
 
     /**
      * Get the default path to scan.
@@ -35,6 +38,7 @@ class FunctionScanner extends Scanner
 
     /**
      * Parse and extract function metadata from a YAML file.
+     * @throws FileNotFoundException
      */
     protected function process(string $filePath, string $basePath): ?FunctionConfig
     {
@@ -59,30 +63,30 @@ class FunctionScanner extends Scanner
     /**
      * Validate function definition against schema requirements.
      *
-     * @param  array<string, mixed>  $data  Parsed YAML data
+     * @param array<string, mixed> $data Parsed YAML data
      * @return string[] Array of validation error messages
      */
     protected function validate(array $data): array
     {
         $errors = [];
 
-        if (! isset($data['function'])) {
+        if (!isset($data['function'])) {
             $errors[] = "Missing 'function' section";
         } else {
             $required = ['name', 'description', 'route', 'method', 'runtime', 'entrypoint'];
             foreach ($required as $field) {
-                if (! isset($data['function'][$field])) {
+                if (!isset($data['function'][$field])) {
                     $errors[] = "Missing required field: function.{$field}";
                 }
             }
 
-            if (isset($data['function']['route']) && ! str_starts_with($data['function']['route'], '/')) {
+            if (isset($data['function']['route']) && !str_starts_with($data['function']['route'], '/')) {
                 $errors[] = "Route must start with '/'";
             }
 
             if (isset($data['function']['method'])) {
                 $validMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'];
-                if (! in_array($data['function']['method'], $validMethods)) {
+                if (!in_array($data['function']['method'], $validMethods)) {
                     $errors[] = "Invalid HTTP method: {$data['function']['method']}";
                 }
             }
