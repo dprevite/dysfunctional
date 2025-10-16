@@ -1,3 +1,7 @@
 language: php
 version: '8.4'
 platform: serversideup-cli
+build:
+  args:
+    USER_ID: 1000
+    GROUP_ID: 1000

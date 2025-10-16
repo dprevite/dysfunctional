@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../../schemas/function.schema.json
+
+function:
+  name: Fix Plex Titles
+  description: Find titles with quality nonsense and fix them
+  route: /plex/fix-titles
+  method: POST
+  runtime: language/php/serversideup/8.4/cli
+  entrypoint: entrypoint.php
+  schedule:
+    - cron: "0 3 * * *"
+      timezone: America/Chicago
+  environment:
+    PLEX_URL: $(variable.PLEX_URL:-http://plex:32400}
+    PLEX_TOKEN: $(secret.PLEX_TOKEN:-your_plex_token_here}
+    TMDB_API_KEY: $(secret.TMDB_API_KEY:-your_tmdb_api_key_here}
+    IGNORED_LIBRARIES: $(variable.IGNORED_LIBRARIES:-}
