@@ -7,6 +7,8 @@ use App\Exceptions\FunctionNotFoundException;
 use App\Models\Run;
 use App\Services\Config;
 use App\Services\Docker;
+use App\Services\RequestFormatter;
+use App\Services\ResponseFormatter;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
@@ -58,6 +60,11 @@ class RunMiddleware
             'runtime_path' => $function->runtime()->path,
         ]);
 
+        file_put_contents(
+            filename: storage_path('runs/' . $run->id) . '-request.log',
+            data: new RequestFormatter()->format($request)
+        );
+
         $response = $next($request);
 
         $run->fresh()->update([
@@ -66,6 +73,11 @@ class RunMiddleware
             'status' => 'completed',
             'response_code' => $response->getStatusCode(),
         ]);
+
+        file_put_contents(
+            filename: storage_path('runs/' . $run->id) . '-response.log',
+            data: new ResponseFormatter()->format($response)
+        );
 
         return $response->header(
             'X-Dysfunctional-Run-Id',

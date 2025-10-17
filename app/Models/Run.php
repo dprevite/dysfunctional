@@ -46,4 +46,26 @@ class Run extends Model
     {
         return $this->belongsTo(Run::class, 'build_id');
     }
+
+    public function getHttpRequest(): ?string
+    {
+        $path = storage_path('runs/' . $this->id) . '-request.log';
+
+        if (!file_exists($path)) {
+            return null;
+        }
+
+        return file_get_contents($path);
+    }
+
+    public function getHttpResponse(): ?string
+    {
+        $path = storage_path('runs/' . $this->id) . '-response.log';
+
+        if (!file_exists($path)) {
+            return null;
+        }
+
+        return file_get_contents($path);
+    }
 }
