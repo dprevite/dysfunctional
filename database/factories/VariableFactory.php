@@ -31,7 +31,7 @@ class VariableFactory extends Factory
      */
     public function secret(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'is_secret' => true,
         ]);
     }
@@ -41,7 +41,7 @@ class VariableFactory extends Factory
      */
     public function plainText(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'is_secret' => false,
         ]);
     }

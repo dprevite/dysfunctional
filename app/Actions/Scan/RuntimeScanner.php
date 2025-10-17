@@ -17,9 +17,7 @@ class RuntimeScanner extends Scanner
 {
     public function __construct(
         protected bool $validate = false
-    )
-    {
-    }
+    ) {}
 
     /**
      * Get the default path to scan.
@@ -39,6 +37,7 @@ class RuntimeScanner extends Scanner
 
     /**
      * Parse and extract runtime metadata from a YAML file.
+     *
      * @throws FileNotFoundException
      */
     protected function process(string $filePath, string $basePath): ?Config
@@ -60,7 +59,7 @@ class RuntimeScanner extends Scanner
     /**
      * Validate runtime definition against schema requirements.
      *
-     * @param array<string, mixed> $data Parsed YAML data
+     * @param  array<string, mixed>  $data  Parsed YAML data
      * @return string[] Array of validation error messages
      */
     protected function validate(array $data): array
@@ -69,7 +68,7 @@ class RuntimeScanner extends Scanner
 
         $required = ['language', 'platform'];
         foreach ($required as $field) {
-            if (!isset($data[$field])) {
+            if (! isset($data[$field])) {
                 $errors[] = "Missing required field: {$field}";
             }
         }

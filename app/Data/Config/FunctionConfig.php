@@ -20,9 +20,7 @@ class FunctionConfig extends Config
         public readonly ?array $docker = null,
         public readonly ?array $environment = null,
         public readonly ?array $schedule = null,
-    )
-    {
-    }
+    ) {}
 
     public function runtime(): RuntimeConfig
     {

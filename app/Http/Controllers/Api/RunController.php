@@ -20,9 +20,7 @@ class RunController extends Controller
     public function __construct(
         protected Config $config,
         protected Docker $docker
-    )
-    {
-    }
+    ) {}
 
     /**
      * Run and return the result
@@ -90,9 +88,9 @@ class RunController extends Controller
             'HTTP_REQUEST_INPUT' => json_encode(request()->all()),
         ])
             ->merge($environment)
-            ->map(fn($value, $key) => '-e ' . $key . '=' . escapeshellarg(
-                    is_bool($value) ? ($value ? 'true' : 'false') : (string)$value
-                ))
+            ->map(fn ($value, $key) => '-e ' . $key . '=' . escapeshellarg(
+                is_bool($value) ? ($value ? 'true' : 'false') : (string) $value
+            ))
             ->values()
             ->toArray();
     }
@@ -130,6 +128,4 @@ class RunController extends Controller
 
         return $function;
     }
-
-
 }

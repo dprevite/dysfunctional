@@ -20,7 +20,7 @@ class Docker
         )
             ->throw();
 
-        if (!$result->successful()) {
+        if (! $result->successful()) {
             return [];
         }
 
@@ -75,7 +75,7 @@ class Docker
             "docker image inspect {$name}"
         );
 
-        if (!$result->successful()) {
+        if (! $result->successful()) {
             return null;
         }
 
@@ -87,7 +87,7 @@ class Docker
 
         $data = json_decode($output, true);
 
-        if (!is_array($data) || empty($data)) {
+        if (! is_array($data) || empty($data)) {
             return null;
         }
 
@@ -106,7 +106,7 @@ class Docker
         )
             ->throw();
 
-        if (!$result->successful()) {
+        if (! $result->successful()) {
             return null;
         }
 
@@ -118,7 +118,7 @@ class Docker
 
         $data = json_decode($output, true);
 
-        if (!is_array($data) || empty($data)) {
+        if (! is_array($data) || empty($data)) {
             return null;
         }
 
@@ -147,7 +147,7 @@ class Docker
     private function getBuildArgs(RuntimeConfig $runtime)
     {
         return collect($runtime->build['args'] ?? [])
-            ->map(fn($value, $key) => '--build-arg ' . $key . '=' . escapeshellarg($value))
+            ->map(fn ($value, $key) => '--build-arg ' . $key . '=' . escapeshellarg($value))
             ->values()
             ->implode(' ');
     }
