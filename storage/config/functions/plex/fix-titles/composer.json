@@ -1,0 +1,15 @@
+{
+    "name": "dprevite/plex-quality-finder",
+    "description": "Script to find Plex media with quality indicators in titles",
+    "type": "project",
+    "require": {
+        "php": ">=8.4",
+        "guzzlehttp/guzzle": "^7.0",
+        "monolog/monolog": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "PlexQuality\\": "src/"
+        }
+    }
+}

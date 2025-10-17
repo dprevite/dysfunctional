@@ -1,0 +1,4 @@
+*
+!.gitignore
+!tmdb/.gitignore
+results.json
