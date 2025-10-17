@@ -1,6 +1,6 @@
 ### Test POST to run plex/fix-titles
-POST https://dysfunctional-staging.stegosaurus-hoki.ts.net/run/plex/fix-titles?param=param-value
+POST https://dysfunctional-staging.stegosaurus-hoki.ts.net/run/plex/fix-titles
 header: header-value
 Content-Type: application/x-www-form-urlencoded
 
-field=value
+field = value
