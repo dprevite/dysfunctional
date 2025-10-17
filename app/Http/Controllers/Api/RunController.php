@@ -8,9 +8,11 @@ use App\Data\Config\FunctionConfig;
 use App\Exceptions\FunctionNotFoundException;
 use App\Exceptions\RuntimeConfigurationException;
 use App\Http\Controllers\Controller;
+use App\Models\Run;
 use App\Models\Variable;
 use App\Services\Config;
 use App\Services\Docker;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 use Symfony\Component\Yaml\Yaml;
@@ -20,7 +22,9 @@ class RunController extends Controller
     public function __construct(
         protected Config $config,
         protected Docker $docker
-    ) {}
+    )
+    {
+    }
 
     /**
      * Run and return the result
@@ -28,10 +32,8 @@ class RunController extends Controller
      * @throws RuntimeConfigurationException
      * @throws FunctionNotFoundException
      */
-    public function handle(): string
+    public function handle(Request $request, string $uri, Run $run, FunctionConfig $function): string // noinspection PhpUnused
     {
-        $function = $this->getFunction();
-
         $command = sprintf('docker run --rm -v %s:/app %s %s',
             escapeshellarg(config('dysfunctional.host_path') . $function->getBasePath()),
             implode(' ', $this->getEnvironment($function)),
@@ -40,7 +42,19 @@ class RunController extends Controller
 
         Log::info('Running command: ' . $command);
 
+        $run->update([
+            'build_id' => $this->buildRuntime($request, $function)?->id,
+            'command' => $command,
+            'status' => 'running',
+            'started_at' => microtime(true),
+        ]);
+
         $result = Process::run($command)->throw();
+
+        $run->update([
+            'stopped_at' => microtime(true),
+            'is_success' => $result->successful(),
+        ]);
 
         Log::info('Command finished', [
             'successful' => $result->successful(),
@@ -88,44 +102,33 @@ class RunController extends Controller
             'HTTP_REQUEST_INPUT' => json_encode(request()->all()),
         ])
             ->merge($environment)
-            ->map(fn ($value, $key) => '-e ' . $key . '=' . escapeshellarg(
-                is_bool($value) ? ($value ? 'true' : 'false') : (string) $value
-            ))
+            ->map(fn($value, $key) => '-e ' . $key . '=' . escapeshellarg(
+                    is_bool($value) ? ($value ? 'true' : 'false') : (string)$value
+                ))
             ->values()
             ->toArray();
     }
 
-    /**
-     * @throws FunctionNotFoundException
-     * @throws RuntimeConfigurationException
-     */
-    private function getFunction(): FunctionConfig
+    private function buildRuntime(Request $request, FunctionConfig $function): ?Run
     {
-        $function = $this->config->functionMatchingRoute(
-            method: request()->method(),
-            uri: request()->uri()
-        );
-
-        if ($function === null) {
-            Log::error('No function matches this route: ' . request()->method() . ' ' . request()->uri());
-
-            throw new FunctionNotFoundException('No function matches this route');
-        }
+        $needsBuild = false;
 
         if ($this->docker->getImage($function->runtime()->getDockerImageTag()) === null) {
+            $needsBuild = true;
+
             Log::info('Cannot find image for ' . $function->runtime()->getDockerImageTag());
-
-            $this->docker->buildImage($function->runtime());
         }
 
-        if ($function->getEntrypoint() === null) {
-            Log::error('Entrypoint file does not exist: ' . $function->getEntrypoint());
+        if ($request->hasHeader('X-Dysfunctional-Force-Build-Runtime')) {
+            $needsBuild = true;
 
-            throw new RuntimeConfigurationException(
-                'Entrypoint file does not exist: ' . $function->getEntrypoint()
-            );
+            Log::info('Forcing rebuild of image for ' . $function->runtime()->getDockerImageTag());
         }
 
-        return $function;
+        if ($needsBuild === false) {
+            return null;
+        }
+
+        return $this->docker->buildImage($function->runtime());
     }
 }

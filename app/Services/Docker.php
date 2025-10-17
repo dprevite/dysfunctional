@@ -3,7 +3,8 @@
 namespace App\Services;
 
 use App\Data\Config\RuntimeConfig;
-use Illuminate\Contracts\Process\ProcessResult;
+use App\Models\Run;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 
 class Docker
@@ -20,7 +21,7 @@ class Docker
         )
             ->throw();
 
-        if (! $result->successful()) {
+        if (!$result->successful()) {
             return [];
         }
 
@@ -75,7 +76,7 @@ class Docker
             "docker image inspect {$name}"
         );
 
-        if (! $result->successful()) {
+        if (!$result->successful()) {
             return null;
         }
 
@@ -87,7 +88,7 @@ class Docker
 
         $data = json_decode($output, true);
 
-        if (! is_array($data) || empty($data)) {
+        if (!is_array($data) || empty($data)) {
             return null;
         }
 
@@ -106,7 +107,7 @@ class Docker
         )
             ->throw();
 
-        if (! $result->successful()) {
+        if (!$result->successful()) {
             return null;
         }
 
@@ -118,7 +119,7 @@ class Docker
 
         $data = json_decode($output, true);
 
-        if (! is_array($data) || empty($data)) {
+        if (!is_array($data) || empty($data)) {
             return null;
         }
 
@@ -128,7 +129,7 @@ class Docker
     /**
      * Build a Docker image from a runtime configuration.
      */
-    public function buildImage(RuntimeConfig $runtimeConfig): ProcessResult
+    public function buildImage(RuntimeConfig $runtimeConfig): Run
     {
         $command = sprintf(
             'docker build -t %s %s %s',
@@ -137,17 +138,37 @@ class Docker
             escapeshellarg(storage_path("config/runtimes/{$runtimeConfig->path}"))
         );
 
-        return Process::env([
+        $run = Run::create([
+            'runtime_path' => $runtimeConfig->path,
+            'started_at' => microtime(true),
+            'status' => 'running',
+            'command' => $command,
+        ]);
+
+        Log::info("Building Docker image with command: {$command}");
+
+        $result = Process::env([
             'DOCKER_CONFIG' => '/tmp/.docker', // TODO: Why is this here
         ])
             ->run($command)
             ->throw();
+
+        $run->update([
+            'status' => 'completed',
+            'stopped_at' => microtime(true),
+            'is_success' => $result->successful(),
+        ]);
+
+        return $run;
     }
 
+    /**
+     * Generate Docker build arguments.
+     */
     private function getBuildArgs(RuntimeConfig $runtime)
     {
         return collect($runtime->build['args'] ?? [])
-            ->map(fn ($value, $key) => '--build-arg ' . $key . '=' . escapeshellarg($value))
+            ->map(fn($value, $key) => '--build-arg ' . $key . '=' . $value)
             ->values()
             ->implode(' ');
     }
