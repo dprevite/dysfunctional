@@ -14,7 +14,7 @@ class Run extends Model
     use HasFactory, HasUuids;
 
     /**
-     * The attributes that aren't mass assignable.
+     * The attributes that aren't mass-assignable.
      *
      * @var array<string>
      */
@@ -49,7 +49,7 @@ class Run extends Model
 
     public function getHttpRequest(): ?string
     {
-        $path = storage_path('runs/' . $this->id) . '-request.log';
+        $path = storage_path('runs/' . $this->id . '/request.log');
 
         if (! file_exists($path)) {
             return null;
@@ -60,7 +60,7 @@ class Run extends Model
 
     public function getHttpResponse(): ?string
     {
-        $path = storage_path('runs/' . $this->id) . '-response.log';
+        $path = storage_path('runs/' . $this->id . '/response.log');
 
         if (! file_exists($path)) {
             return null;

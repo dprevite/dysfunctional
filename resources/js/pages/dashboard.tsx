@@ -84,40 +84,39 @@ interface LogEntry {
     message: string;
 }
 
-interface LogData {
+interface Run {
     id: string;
-    title: string;
-    functionName?: string;
-    runtime?: string;
-    status: 'running' | 'success' | 'error';
-    exitCode?: number;
-    startTime?: string;
-    metrics?: {
-        responseTime?: string;
-        executionTime?: string;
-        maxMemory?: string;
-        cost?: string;
-    };
-    scheduled?: {
-        cron: string;
-        description: string;
-    };
-    entries: LogEntry[];
+    function_path: string | null;
+    runtime_path: string | null;
+    requested_at: number | null;
+    responded_at: number | null;
+    started_at: number | null;
+    stopped_at: number | null;
+    build_id: string | null;
+    uri: string | null;
+    response_code: number | null;
+    cost: number | null;
+    status: 'running' | 'completed' | 'starting';
+    is_success: boolean | null;
+    command: string | null;
+    logs: LogEntry[];
+    created_at: string;
+    updated_at: string;
 }
 
 interface DashboardProps {
-    stats: {
+    stats?: {
         functions: number;
         totalRuns: number;
         runsToday: number;
         unresolvedErrors: number;
     };
-    chartData: {
+    chartData?: {
         '24h': ChartDataPoint[];
         '7d': ChartDataPoint[];
         '30d': ChartDataPoint[];
     };
-    logs: LogData[];
+    runs?: Run[];
 }
 
 interface LogMessage {
@@ -128,7 +127,7 @@ interface LogMessage {
     formatted: string;
 }
 
-export default function Dashboard({ stats, chartData, logs }: DashboardProps) {
+export default function Dashboard({ stats, chartData, runs }: DashboardProps) {
     const [logMessages, setLogMessages] = React.useState<LogMessage[]>([]);
     const logContainerRef = React.useRef<HTMLDivElement>(null);
 
@@ -163,6 +162,31 @@ export default function Dashboard({ stats, chartData, logs }: DashboardProps) {
 
         return () => observer.disconnect();
     }, []);
+
+    // Helper function to map Run status to TerminalBlock status
+    const mapRunStatus = (run: Run): 'running' | 'success' | 'error' => {
+        if (run.status === 'running' || run.status === 'starting') {
+            return 'running';
+        }
+        if (run.status === 'completed') {
+            return run.is_success ? 'success' : 'error';
+        }
+        return 'error';
+    };
+
+    // Helper function to format milliseconds to human-readable time
+    const formatDuration = (ms: number | null | undefined): string | undefined => {
+        if (!ms) return undefined;
+        if (ms < 1000) return `${ms}ms`;
+        if (ms < 60000) return `${(ms / 1000).toFixed(2)}s`;
+        return `${(ms / 60000).toFixed(2)}m`;
+    };
+
+    // Helper function to format cost
+    const formatCost = (cost: number | null | undefined): string | undefined => {
+        if (!cost) return undefined;
+        return `$${(cost / 1000000).toFixed(6)}`;
+    };
 
     return (
         <SidebarProvider>
@@ -242,29 +266,31 @@ export default function Dashboard({ stats, chartData, logs }: DashboardProps) {
                     {/* Main Content */}
                     <main className="flex-1 space-y-6 overflow-auto px-6 py-6">
                         {/* Stats Grid */}
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                            <StatCard
-                                icon={Code2}
-                                label="Functions"
-                                value={stats.functions}
-                                status="online"
-                            />
-                            <StatCard
-                                icon={Activity}
-                                label="Total Runs"
-                                value={stats.totalRuns}
-                            />
-                            <StatCard
-                                icon={Activity}
-                                label="Runs Today"
-                                value={stats.runsToday}
-                            />
-                            <StatCard
-                                icon={HeartPulse}
-                                label="Unresolved Errors"
-                                value={stats.unresolvedErrors}
-                            />
-                        </div>
+                        {stats && (
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                                <StatCard
+                                    icon={Code2}
+                                    label="Functions"
+                                    value={stats.functions}
+                                    status="online"
+                                />
+                                <StatCard
+                                    icon={Activity}
+                                    label="Total Runs"
+                                    value={stats.totalRuns}
+                                />
+                                <StatCard
+                                    icon={Activity}
+                                    label="Runs Today"
+                                    value={stats.runsToday}
+                                />
+                                <StatCard
+                                    icon={HeartPulse}
+                                    label="Unresolved Errors"
+                                    value={stats.unresolvedErrors}
+                                />
+                            </div>
+                        )}
 
                         {/* Real-time Logs */}
                         <div className="overflow-hidden rounded-lg border border-gray-700/50 bg-black/40 p-4 shadow-lg shadow-black/20 backdrop-blur-sm">
@@ -334,28 +360,42 @@ export default function Dashboard({ stats, chartData, logs }: DashboardProps) {
                         </div>
 
                         {/* Function Calls Chart */}
-                        <FunctionCallsChart
-                            data24h={chartData['24h']}
-                            data7d={chartData['7d']}
-                            data30d={chartData['30d']}
-                        />
+                        {chartData && (
+                            <FunctionCallsChart
+                                data24h={chartData['24h']}
+                                data7d={chartData['7d']}
+                                data30d={chartData['30d']}
+                            />
+                        )}
 
                         {/* Terminal Blocks */}
-                        {logs.map((log) => (
-                            <TerminalBlock
-                                key={log.id}
-                                title={log.title}
-                                functionName={log.functionName}
-                                runtime={log.runtime}
-                                status={log.status}
-                                exitCode={log.exitCode}
-                                logId={log.id}
-                                startTime={log.startTime}
-                                metrics={log.metrics}
-                                scheduled={log.scheduled}
-                                logs={log.entries}
-                            />
-                        ))}
+                        {runs?.map((run) => {
+                            const executionTime = run.started_at && run.stopped_at
+                                ? formatDuration(run.stopped_at - run.started_at)
+                                : undefined;
+                            const responseTime = run.requested_at && run.responded_at
+                                ? formatDuration(run.responded_at - run.requested_at)
+                                : undefined;
+
+                            return (
+                                <TerminalBlock
+                                    key={run.id}
+                                    title={run.uri || 'Unknown'}
+                                    functionName={run.function_path || undefined}
+                                    runtime={run.runtime_path || undefined}
+                                    status={mapRunStatus(run)}
+                                    exitCode={run.response_code || undefined}
+                                    logId={run.id}
+                                    startTime={run.started_at ? new Date(run.started_at).toISOString() : undefined}
+                                    metrics={{
+                                        executionTime,
+                                        responseTime,
+                                        cost: formatCost(run.cost),
+                                    }}
+                                    logs={run.logs}
+                                />
+                            );
+                        })}
                     </main>
 
                     {/* Fixed Status Bar */}

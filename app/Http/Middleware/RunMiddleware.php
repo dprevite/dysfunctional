@@ -20,14 +20,12 @@ class RunMiddleware
     public function __construct(
         protected Config $config,
         protected Docker $docker
-    )
-    {
-    }
+    ) {}
 
     /**
      * Handle an incoming request.
      *
-     * @param Closure(Request): (Response) $next
+     * @param  Closure(Request): (Response)  $next
      *
      * @throws FunctionNotFoundException
      */
@@ -35,7 +33,7 @@ class RunMiddleware
     {
         $run = Run::create([
             'requested_at' => microtime(true),
-            'uri' => $request->getRequestUri(),
+            'uri'          => $request->getRequestUri(),
         ]);
 
         Context::add('run_id', $run->id);
@@ -57,26 +55,40 @@ class RunMiddleware
 
         $run->update([
             'function_path' => $function->path,
-            'runtime_path' => $function->runtime()->path,
+            'runtime_path'  => $function->runtime()->path,
         ]);
+
+        Log::info(
+            'Starting run for function: ' . $function->path .
+            ' with runtime: ' . $function->runtime()->path
+        );
 
         file_put_contents(
             filename: storage_path('runs/' . $run->id) . '-request.log',
             data: new RequestFormatter()->format($request)
         );
 
+        Log::info(new RequestFormatter()->format($request));
+
         $response = $next($request);
 
         $run->fresh()->update([
-            'responded_at' => microtime(true),
-            'is_success' => true,
-            'status' => 'completed',
+            'responded_at'  => microtime(true),
+            'is_success'    => true,
+            'status'        => 'completed',
             'response_code' => $response->getStatusCode(),
         ]);
 
         file_put_contents(
             filename: storage_path('runs/' . $run->id) . '-response.log',
             data: new ResponseFormatter()->format($response)
+        );
+
+        Log::info(new ResponseFormatter()->format($response));
+
+        Log::info(
+            'Completed run for function: ' . $function->path .
+            ' with runtime: ' . $function->runtime()->path
         );
 
         return $response->header(
