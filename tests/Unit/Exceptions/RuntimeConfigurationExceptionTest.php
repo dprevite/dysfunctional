@@ -8,21 +8,21 @@ uses(TestCase::class);
 
 test('renders as json response', function () {
     $exception = new RuntimeConfigurationException('Test runtime configuration error');
-    $request = Request::create('/test', 'GET');
+    $request   = Request::create('/test', 'GET');
 
     $response = $exception->render($request);
 
     expect($response->getStatusCode())->toBe(500)
         ->and($response->getData(true))->toBe([
-            'error' => 'Runtime Configuration Error',
+            'error'   => 'Runtime Configuration Error',
             'message' => 'Test runtime configuration error',
         ]);
 });
 
 test('includes custom message in json response', function () {
     $customMessage = 'Runtime not found';
-    $exception = new RuntimeConfigurationException($customMessage);
-    $request = Request::create('/test', 'GET');
+    $exception     = new RuntimeConfigurationException($customMessage);
+    $request       = Request::create('/test', 'GET');
 
     $response = $exception->render($request);
 

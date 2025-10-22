@@ -72,7 +72,7 @@ class StoreFunctionRequest extends FormRequest
     {
         return [
             'route.regex' => 'The route must be a valid URL path starting with a forward slash.',
-            'name.regex' => 'The name may only contain letters, numbers, dashes, and underscores.',
+            'name.regex'  => 'The name may only contain letters, numbers, dashes, and underscores.',
             'timeout.min' => 'The timeout must be at least 1 second.',
             'timeout.max' => 'The timeout must not exceed 900 seconds (15 minutes).',
         ];

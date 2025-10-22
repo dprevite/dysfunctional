@@ -28,14 +28,14 @@ class Run extends Model
     protected function casts(): array
     {
         return [
-            'requested_at' => 'integer',
-            'responded_at' => 'integer',
-            'started_at' => 'integer',
-            'stopped_at' => 'integer',
+            'requested_at'  => 'integer',
+            'responded_at'  => 'integer',
+            'started_at'    => 'integer',
+            'stopped_at'    => 'integer',
             'response_code' => 'integer',
-            'memory' => 'integer',
-            'cost' => 'integer',
-            'is_success' => 'boolean',
+            'memory'        => 'integer',
+            'cost'          => 'integer',
+            'is_success'    => 'boolean',
         ];
     }
 
@@ -51,7 +51,7 @@ class Run extends Model
     {
         $path = storage_path('runs/' . $this->id) . '-request.log';
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             return null;
         }
 
@@ -62,7 +62,7 @@ class Run extends Model
     {
         $path = storage_path('runs/' . $this->id) . '-response.log';
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             return null;
         }
 

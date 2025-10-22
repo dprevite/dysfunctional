@@ -74,7 +74,7 @@ final class Runtimes extends Command
     protected function displayResults(array $results): void
     {
         $headers = ['Path', 'Language', 'Version', 'Platform'];
-        $rows = array_map(fn ($r) => [
+        $rows    = array_map(fn ($r) => [
             $r['path'],
             $r['language'],
             $r['version'] ?: '-',

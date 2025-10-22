@@ -47,8 +47,8 @@ class RuntimeScanner extends Scanner
         return RuntimeConfig::from(
             array_merge(
                 [
-                    'file' => $filePath,
-                    'path' => str_replace($basePath . '/', '', dirname($filePath)),
+                    'file'             => $filePath,
+                    'path'             => str_replace($basePath . '/', '', dirname($filePath)),
                     'validationErrors' => $this->validate($data),
                 ],
                 $data

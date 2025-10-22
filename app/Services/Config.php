@@ -62,7 +62,7 @@ class Config
     public function functionMatchingRoute(string $method, Uri $uri): ?FunctionConfig
     {
         $requestPath = preg_replace('/^\/?run/', '', $uri->path());
-        $method = strtoupper($method);
+        $method      = strtoupper($method);
 
         $functions = $this->functions();
 
@@ -82,7 +82,7 @@ class Config
     {
         // Remove leading/trailing slashes for comparison
         $routePattern = trim($routePattern, '/');
-        $requestPath = trim($requestPath, '/');
+        $requestPath  = trim($requestPath, '/');
 
         // Exact match
         if ($routePattern === $requestPath) {

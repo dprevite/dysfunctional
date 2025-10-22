@@ -19,16 +19,12 @@ class RequestFormatter
 
     public function __construct(int $bodyLimit = 1000, int $headerLimit = 200)
     {
-        $this->bodyLimit = $bodyLimit;
+        $this->bodyLimit   = $bodyLimit;
         $this->headerLimit = $headerLimit;
     }
 
     /**
      * Format a request object as plain text
-     *
-     * @param Request $request
-     * @param int|null $bodyLimit
-     * @return string
      */
     public function format(Request $request, ?int $bodyLimit = null): string
     {
@@ -38,7 +34,7 @@ class RequestFormatter
 
         // Request line
         $output[] = sprintf(
-            "%s %s %s",
+            '%s %s %s',
             $request->method(),
             $request->fullUrl(),
             $request->server('SERVER_PROTOCOL', 'HTTP/1.1')
@@ -70,7 +66,7 @@ class RequestFormatter
 
         // Request body
         $body = $this->getRequestBody($request);
-        if (!empty($body)) {
+        if (! empty($body)) {
             $output[] = '=== BODY ===';
             $output[] = $this->formatBody($body, $bodyLimit);
             $output[] = '';
@@ -88,15 +84,13 @@ class RequestFormatter
 
     /**
      * Get the request body content
-     *
-     * @param Request $request
-     * @return string
      */
     protected function getRequestBody(Request $request): string
     {
         // Try to get JSON content first
         if ($request->isJson()) {
             $json = $request->json()->all();
+
             return json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         }
 
@@ -111,10 +105,6 @@ class RequestFormatter
 
     /**
      * Format and truncate body content
-     *
-     * @param string $body
-     * @param int $limit
-     * @return string
      */
     protected function formatBody(string $body, int $limit): string
     {
@@ -122,7 +112,7 @@ class RequestFormatter
             return $body;
         }
 
-        $truncated = substr($body, 0, $limit);
+        $truncated      = substr($body, 0, $limit);
         $originalLength = strlen($body);
         $truncatedBytes = $originalLength - $limit;
 
@@ -132,10 +122,7 @@ class RequestFormatter
     /**
      * Format a parameter (handles arrays and objects)
      *
-     * @param string $key
-     * @param mixed $value
-     * @param int $depth
-     * @return string
+     * @param  mixed  $value
      */
     protected function formatParameter(string $key, $value, int $depth = 0): string
     {
@@ -146,6 +133,7 @@ class RequestFormatter
             foreach ($value as $k => $v) {
                 $lines[] = $this->formatParameter($k, $v, $depth + 1);
             }
+
             return implode("\n", $lines);
         }
 
@@ -166,9 +154,6 @@ class RequestFormatter
 
     /**
      * Normalize header names to Title-Case
-     *
-     * @param string $name
-     * @return string
      */
     protected function normalizeHeaderName(string $name): string
     {

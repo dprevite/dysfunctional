@@ -4,7 +4,7 @@ use App\Models\User;
 
 it('allows authenticated user to view dashboard', function () {
     $user = User::factory()->create([
-        'email' => 'test@example.com',
+        'email'    => 'test@example.com',
         'password' => bcrypt('password'),
     ]);
 
@@ -25,7 +25,7 @@ it('allows authenticated user to view dashboard', function () {
 
 it('displays function execution chart on dashboard', function () {
     $user = User::factory()->create([
-        'email' => 'test@example.com',
+        'email'    => 'test@example.com',
         'password' => bcrypt('password'),
     ]);
 
@@ -42,7 +42,7 @@ it('displays function execution chart on dashboard', function () {
 
 it('shows recent function runs with logs', function () {
     $user = User::factory()->create([
-        'email' => 'test@example.com',
+        'email'    => 'test@example.com',
         'password' => bcrypt('password'),
     ]);
 

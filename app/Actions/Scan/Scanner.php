@@ -54,7 +54,7 @@ abstract class Scanner
      */
     protected function getFiles(string $basePath): array
     {
-        $files = [];
+        $files    = [];
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($basePath, FilesystemIterator::SKIP_DOTS),
             RecursiveIteratorIterator::SELF_FIRST

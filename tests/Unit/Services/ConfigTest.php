@@ -64,7 +64,7 @@ test('functions uses cache on subsequent calls', function () {
 
     $config = new Config($functionScanner, $runtimeScanner);
 
-    $firstCall = $config->functions();
+    $firstCall  = $config->functions();
     $secondCall = $config->functions();
 
     expect($firstCall)->toBe($expected)
@@ -123,7 +123,7 @@ test('runtimes uses cache on subsequent calls', function () {
 
     $config = new Config($functionScanner, $runtimeScanner);
 
-    $firstCall = $config->runtimes();
+    $firstCall  = $config->runtimes();
     $secondCall = $config->runtimes();
 
     expect($firstCall)->toBe($expected)

@@ -71,7 +71,7 @@ abstract class Scan extends Command
      */
     protected function findFiles(string $basePath): array
     {
-        $files = [];
+        $files    = [];
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($basePath, FilesystemIterator::SKIP_DOTS),
             RecursiveIteratorIterator::SELF_FIRST

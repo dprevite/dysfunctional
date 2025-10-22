@@ -22,9 +22,7 @@ class RunController extends Controller
     public function __construct(
         protected Config $config,
         protected Docker $docker
-    )
-    {
-    }
+    ) {}
 
     /**
      * Run and return the result
@@ -43,9 +41,9 @@ class RunController extends Controller
         Log::info('Running command: ' . $command);
 
         $run->update([
-            'build_id' => $this->buildRuntime($request, $function)?->id,
-            'command' => $command,
-            'status' => 'running',
+            'build_id'   => $this->buildRuntime($request, $function)?->id,
+            'command'    => $command,
+            'status'     => 'running',
             'started_at' => microtime(true),
         ]);
 
@@ -58,8 +56,8 @@ class RunController extends Controller
 
         Log::info('Command finished', [
             'successful' => $result->successful(),
-            'failed' => $result->failed(),
-            'exitCode' => $result->exitCode(),
+            'failed'     => $result->failed(),
+            'exitCode'   => $result->exitCode(),
         ]);
 
         return $result->output() ?? $result->errorOutput();
@@ -71,8 +69,8 @@ class RunController extends Controller
         $pattern = '/\$\((secret|variable)\.([A-Z_]+):-([^}]+)\}/';
 
         return preg_replace_callback($pattern, function ($matches) use ($secrets, $variables) {
-            $type = $matches[1];        // 'secret' or 'variable'
-            $key = $matches[2];          // e.g., 'PLEX_TOKEN'
+            $type         = $matches[1];        // 'secret' or 'variable'
+            $key          = $matches[2];          // e.g., 'PLEX_TOKEN'
             $defaultValue = $matches[3]; // e.g., 'your_plex_token_here'
 
             // Determine which array to look in
@@ -99,12 +97,12 @@ class RunController extends Controller
 
         return collect([
             'HTTP_REQUEST_HEADERS' => json_encode(getallheaders()),
-            'HTTP_REQUEST_INPUT' => json_encode(request()->all()),
+            'HTTP_REQUEST_INPUT'   => json_encode(request()->all()),
         ])
             ->merge($environment)
-            ->map(fn($value, $key) => '-e ' . $key . '=' . escapeshellarg(
-                    is_bool($value) ? ($value ? 'true' : 'false') : (string)$value
-                ))
+            ->map(fn ($value, $key) => '-e ' . $key . '=' . escapeshellarg(
+                is_bool($value) ? ($value ? 'true' : 'false') : (string) $value
+            ))
             ->values()
             ->toArray();
     }

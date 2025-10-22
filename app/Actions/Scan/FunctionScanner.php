@@ -50,7 +50,7 @@ class FunctionScanner extends Scanner
         return FunctionConfig::from(
             array_merge(
                 [
-                    'path' => str_replace($basePath . '/', '', dirname($filePath)),
+                    'path'             => str_replace($basePath . '/', '', dirname($filePath)),
                     'validationErrors' => $this->validate($data),
                 ],
                 $data,

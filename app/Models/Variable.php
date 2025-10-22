@@ -42,7 +42,7 @@ class Variable extends Model
             ->get();
 
         $result = [
-            'secrets' => [],
+            'secrets'   => [],
             'variables' => [],
         ];
 

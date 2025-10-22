@@ -18,10 +18,10 @@ class VariableFactory extends Factory
     public function definition(): array
     {
         return [
-            'path' => fake()->slug(2) . '/' . fake()->slug(2),
-            'type' => fake()->randomElement(['function', 'runtime']),
-            'name' => strtoupper(fake()->word()) . '_' . strtoupper(fake()->word()),
-            'value' => fake()->uuid(),
+            'path'      => fake()->slug(2) . '/' . fake()->slug(2),
+            'type'      => fake()->randomElement(['function', 'runtime']),
+            'name'      => strtoupper(fake()->word()) . '_' . strtoupper(fake()->word()),
+            'value'     => fake()->uuid(),
             'is_secret' => fake()->boolean(),
         ];
     }

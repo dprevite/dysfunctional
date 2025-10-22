@@ -14,7 +14,7 @@ class RuntimeConfigurationException extends Exception
     public function render(Request $request): JsonResponse
     {
         return response()->json([
-            'error' => 'Runtime Configuration Error',
+            'error'   => 'Runtime Configuration Error',
             'message' => $this->getMessage(),
         ], 500);
     }

@@ -8,11 +8,13 @@ class DashboardController extends Controller
 {
     public function index(): Response
     {
-        return inertia('dashboard', [
-            'stats' => $this->getStats(),
-            'chartData' => $this->getChartData(),
-            'logs' => $this->getLogs(),
-        ]);
+        return inertia(
+            component: 'dashboard',
+            props: [
+                'stats'     => $this->getStats(),
+                'chartData' => $this->getChartData(),
+                'logs'      => $this->getLogs(),
+            ]);
     }
 
     /**
@@ -21,9 +23,9 @@ class DashboardController extends Controller
     private function getStats(): array
     {
         return [
-            'functions' => 3,
-            'totalRuns' => 126,
-            'runsToday' => 21,
+            'functions'        => 3,
+            'totalRuns'        => 126,
+            'runsToday'        => 21,
             'unresolvedErrors' => 0,
         ];
     }
@@ -67,18 +69,18 @@ class DashboardController extends Controller
     {
         return [
             [
-                'id' => '9d3e5f8a-7c2b-4a1d-9e5f-8a7c2b4a1d9e',
-                'title' => 'POST /run/plex-activity-webhook',
+                'id'           => '9d3e5f8a-7c2b-4a1d-9e5f-8a7c2b4a1d9e',
+                'title'        => 'POST /run/plex-activity-webhook',
                 'functionName' => 'plex-webhook',
-                'runtime' => 'node-20',
-                'status' => 'success',
-                'exitCode' => 0,
-                'startTime' => '2025-10-11T19:29:20.001Z',
-                'metrics' => [
-                    'responseTime' => '45ms',
+                'runtime'      => 'node-20',
+                'status'       => 'success',
+                'exitCode'     => 0,
+                'startTime'    => '2025-10-11T19:29:20.001Z',
+                'metrics'      => [
+                    'responseTime'  => '45ms',
                     'executionTime' => '6.1s',
-                    'maxMemory' => '128 MB',
-                    'cost' => '$0.0012',
+                    'maxMemory'     => '128 MB',
+                    'cost'          => '$0.0012',
                 ],
                 'entries' => [
                     ['timestamp' => '2025-10-11T19:29:20.001Z', 'message' => '[DEBUG] Initializing container provisioner'],
@@ -104,17 +106,17 @@ class DashboardController extends Controller
                 ],
             ],
             [
-                'id' => 'a1b2c3d4-e5f6-4789-abcd-ef0123456789',
-                'title' => 'GET /run/chatbot-fetch-whats-playing',
+                'id'           => 'a1b2c3d4-e5f6-4789-abcd-ef0123456789',
+                'title'        => 'GET /run/chatbot-fetch-whats-playing',
                 'functionName' => 'chatbot-media',
-                'runtime' => 'python-3.11',
-                'status' => 'running',
-                'startTime' => '2025-10-11T19:30:00.789Z',
-                'metrics' => [
-                    'responseTime' => '1.2s',
+                'runtime'      => 'python-3.11',
+                'status'       => 'running',
+                'startTime'    => '2025-10-11T19:30:00.789Z',
+                'metrics'      => [
+                    'responseTime'  => '1.2s',
                     'executionTime' => '3.8s',
-                    'maxMemory' => '256 MB',
-                    'cost' => '$0.0018',
+                    'maxMemory'     => '256 MB',
+                    'cost'          => '$0.0018',
                 ],
                 'entries' => [
                     ['timestamp' => '2025-10-11T19:30:00.789Z', 'message' => '[DEBUG] Initializing image processor worker'],
@@ -134,18 +136,18 @@ class DashboardController extends Controller
                 ],
             ],
             [
-                'id' => 'f7e8d9c0-b1a2-4f3e-8d9c-0b1a2f3e8d9c',
-                'title' => 'GET /run/resize-image?width=1500px&src=IMG123.jpg&format=png',
+                'id'           => 'f7e8d9c0-b1a2-4f3e-8d9c-0b1a2f3e8d9c',
+                'title'        => 'GET /run/resize-image?width=1500px&src=IMG123.jpg&format=png',
                 'functionName' => 'resize-image',
-                'runtime' => 'go-1.21',
-                'status' => 'error',
-                'exitCode' => 1,
-                'startTime' => '2025-10-11T19:28:00.890Z',
-                'metrics' => [
-                    'responseTime' => '523ms',
+                'runtime'      => 'go-1.21',
+                'status'       => 'error',
+                'exitCode'     => 1,
+                'startTime'    => '2025-10-11T19:28:00.890Z',
+                'metrics'      => [
+                    'responseTime'  => '523ms',
                     'executionTime' => '2.3s',
-                    'maxMemory' => '64 MB',
-                    'cost' => '$0.0008',
+                    'maxMemory'     => '64 MB',
+                    'cost'          => '$0.0008',
                 ],
                 'entries' => [
                     ['timestamp' => '2025-10-11T19:28:00.890Z', 'message' => '[DEBUG] Database migration worker started'],

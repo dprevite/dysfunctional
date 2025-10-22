@@ -22,16 +22,12 @@ class ResponseFormatter
 
     public function __construct(int $bodyLimit = 1000, int $headerLimit = 200)
     {
-        $this->bodyLimit = $bodyLimit;
+        $this->bodyLimit   = $bodyLimit;
         $this->headerLimit = $headerLimit;
     }
 
     /**
      * Format a response object as plain text
-     *
-     * @param BaseResponse $response
-     * @param int|null $bodyLimit
-     * @return string
      */
     public function format(BaseResponse $response, ?int $bodyLimit = null): string
     {
@@ -41,7 +37,7 @@ class ResponseFormatter
 
         // Status line
         $output[] = sprintf(
-            "HTTP/%s %d %s",
+            'HTTP/%s %d %s',
             $response->getProtocolVersion(),
             $response->getStatusCode(),
             BaseResponse::$statusTexts[$response->getStatusCode()] ?? 'Unknown'
@@ -64,7 +60,7 @@ class ResponseFormatter
 
         // Response body
         $body = $this->getResponseBody($response);
-        if (!empty($body)) {
+        if (! empty($body)) {
             $output[] = '=== BODY ===';
             $output[] = $this->formatBody($body, $bodyLimit);
             $output[] = '';
@@ -84,12 +80,12 @@ class ResponseFormatter
 
         // Cookies if present
         $cookies = $response->headers->getCookies();
-        if (!empty($cookies)) {
+        if (! empty($cookies)) {
             $output[] = '';
             $output[] = '=== COOKIES ===';
             foreach ($cookies as $cookie) {
                 $output[] = sprintf(
-                    "%s: %s (expires: %s, path: %s, domain: %s, secure: %s, httpOnly: %s)",
+                    '%s: %s (expires: %s, path: %s, domain: %s, secure: %s, httpOnly: %s)',
                     $cookie->getName(),
                     Str::limit($cookie->getValue(), 100),
                     $cookie->getExpiresTime() ? date('Y-m-d H:i:s', $cookie->getExpiresTime()) : 'session',
@@ -106,9 +102,6 @@ class ResponseFormatter
 
     /**
      * Get the response body content
-     *
-     * @param BaseResponse $response
-     * @return string
      */
     protected function getResponseBody(BaseResponse $response): string
     {
@@ -121,10 +114,6 @@ class ResponseFormatter
 
     /**
      * Format and truncate body content
-     *
-     * @param string $body
-     * @param int $limit
-     * @return string
      */
     protected function formatBody(string $body, int $limit): string
     {
@@ -138,7 +127,7 @@ class ResponseFormatter
             return $body;
         }
 
-        $truncated = substr($body, 0, $limit);
+        $truncated      = substr($body, 0, $limit);
         $originalLength = strlen($body);
         $truncatedBytes = $originalLength - $limit;
 
@@ -147,9 +136,6 @@ class ResponseFormatter
 
     /**
      * Get the response type as a string
-     *
-     * @param BaseResponse $response
-     * @return string
      */
     protected function getResponseType(BaseResponse $response): string
     {
@@ -170,9 +156,6 @@ class ResponseFormatter
 
     /**
      * Normalize header names to Title-Case
-     *
-     * @param string $name
-     * @return string
      */
     protected function normalizeHeaderName(string $name): string
     {

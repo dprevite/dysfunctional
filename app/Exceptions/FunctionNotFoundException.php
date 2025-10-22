@@ -14,7 +14,7 @@ class FunctionNotFoundException extends Exception
     public function render(Request $request): JsonResponse
     {
         return response()->json([
-            'error' => 'Function not found',
+            'error'   => 'Function not found',
             'message' => $this->getMessage(),
         ], 404);
     }

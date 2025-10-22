@@ -14,7 +14,7 @@ test('processes returns all running docker containers', function () {
         'docker ps --format "{{json .}}"' => Process::result($dockerOutput),
     ]);
 
-    $docker = new Docker;
+    $docker    = new Docker;
     $processes = $docker->processes();
 
     expect($processes)->toHaveCount(2)
@@ -27,7 +27,7 @@ test('processes returns empty array when no containers running', function () {
         'docker ps --format "{{json .}}"' => Process::result(''),
     ]);
 
-    $docker = new Docker;
+    $docker    = new Docker;
     $processes = $docker->processes();
 
     expect($processes)->toBeEmpty();
@@ -38,7 +38,7 @@ test('processes returns empty array when docker command fails', function () {
         'docker ps --format "{{json .}}"' => Process::result('', 1),
     ]);
 
-    $docker = new Docker;
+    $docker    = new Docker;
     $processes = $docker->processes();
 
     expect($processes)->toBeEmpty();
@@ -83,9 +83,9 @@ test('isProcessRunning returns false when no containers running', function () {
 test('getImage returns image data when image exists', function () {
     $imageData = [
         [
-            'Id' => 'sha256:abc123',
+            'Id'       => 'sha256:abc123',
             'RepoTags' => ['nginx:latest'],
-            'Size' => 142000000,
+            'Size'     => 142000000,
         ],
     ];
 
@@ -94,7 +94,7 @@ test('getImage returns image data when image exists', function () {
     ]);
 
     $docker = new Docker;
-    $image = $docker->getImage('nginx:latest');
+    $image  = $docker->getImage('nginx:latest');
 
     expect($image)->toBe($imageData[0]);
 });
@@ -105,7 +105,7 @@ test('getImage returns null when image does not exist', function () {
     ]);
 
     $docker = new Docker;
-    $image = $docker->getImage('nonexistent-image');
+    $image  = $docker->getImage('nonexistent-image');
 
     expect($image)->toBeNull();
 });
@@ -116,7 +116,7 @@ test('getImage returns null when output is empty', function () {
     ]);
 
     $docker = new Docker;
-    $image = $docker->getImage('empty-image');
+    $image  = $docker->getImage('empty-image');
 
     expect($image)->toBeNull();
 });
@@ -124,10 +124,10 @@ test('getImage returns null when output is empty', function () {
 test('getContainer returns container data when container exists', function () {
     $containerData = [
         [
-            'Id' => 'abc123def456',
-            'Name' => '/my-container',
+            'Id'    => 'abc123def456',
+            'Name'  => '/my-container',
             'State' => [
-                'Status' => 'running',
+                'Status'  => 'running',
                 'Running' => true,
             ],
         ],
@@ -137,7 +137,7 @@ test('getContainer returns container data when container exists', function () {
         'docker container inspect my-container' => Process::result(json_encode($containerData)),
     ]);
 
-    $docker = new Docker;
+    $docker    = new Docker;
     $container = $docker->getContainer('my-container');
 
     expect($container)->toBe($containerData[0]);
@@ -148,7 +148,7 @@ test('getContainer returns null when container does not exist', function () {
         'docker container inspect nonexistent-container' => Process::result('', 1),
     ]);
 
-    $docker = new Docker;
+    $docker    = new Docker;
     $container = $docker->getContainer('nonexistent-container');
 
     expect($container)->toBeNull();
@@ -159,7 +159,7 @@ test('getContainer returns null when output is empty', function () {
         'docker container inspect empty-container' => Process::result(''),
     ]);
 
-    $docker = new Docker;
+    $docker    = new Docker;
     $container = $docker->getContainer('empty-container');
 
     expect($container)->toBeNull();

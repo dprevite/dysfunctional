@@ -74,7 +74,7 @@ final class Functions extends Command
     protected function displayResults(array $results): void
     {
         $headers = ['Path', 'Name', 'Route', 'Method', 'Runtime'];
-        $rows = array_map(fn ($f) => [
+        $rows    = array_map(fn ($f) => [
             $f['path'],
             $f['name'],
             $f['route'],
