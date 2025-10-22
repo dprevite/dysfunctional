@@ -21,6 +21,13 @@ class Run extends Model
     protected $guarded = [];
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array<string>
+     */
+    protected $appends = ['logs'];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -67,5 +74,23 @@ class Run extends Model
         }
 
         return file_get_contents($path);
+    }
+
+    /**
+     * Get the logs associated with this run.
+     *
+     * @return array<int, array<string, string>>
+     */
+    public function getLogsAttribute(): array
+    {
+        $directory = storage_path('runs/' . $this->id);
+
+        if (! is_dir($directory)) {
+            return [];
+        }
+
+        $files = array_diff(scandir($directory), ['.', '..']);
+
+        return array_values($files);
     }
 }
