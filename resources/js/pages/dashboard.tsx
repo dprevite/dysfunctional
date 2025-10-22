@@ -1,24 +1,11 @@
-import {
-    Activity,
-    CheckCircle,
-    Clock,
-    Code2,
-    FileText,
-    HeartPulse,
-    LogOut,
-    Settings,
-    User,
-} from 'lucide-react';
-import React from 'react';
 import { AppSidebar } from '@/components/app-sidebar';
 import { FunctionCallsChart } from '@/components/dashboard/function-calls-chart';
 import { StatCard } from '@/components/dashboard/stat-card';
 import { TerminalBlock } from '@/components/dashboard/terminal-block';
-import {
-    SidebarInset,
-    SidebarProvider,
-    SidebarTrigger,
-} from '@/components/ui/sidebar';
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { useEchoPublic } from '@laravel/echo-react';
+import { Activity, CheckCircle, Code2, FileText, HeartPulse, LogOut, Settings, User } from 'lucide-react';
+import React from 'react';
 
 interface DropdownMenuProps {
     children: React.ReactNode;
@@ -133,17 +120,31 @@ interface DashboardProps {
     logs: LogData[];
 }
 
+interface LogMessage {
+    level: string;
+    message: string;
+    context: Record<string, any>;
+    timestamp: string;
+    formatted: string;
+}
+
 export default function Dashboard({ stats, chartData, logs }: DashboardProps) {
-    const [currentTime, setCurrentTime] = React.useState(new Date());
+    const [logMessages, setLogMessages] = React.useState<LogMessage[]>([]);
+    const logContainerRef = React.useRef<HTMLDivElement>(null);
+
+    useEchoPublic('logs', 'LogBroadcastEvent', (event: LogMessage) => {
+        setLogMessages((prev) => [...prev.slice(-49), event]);
+    });
+
+    React.useEffect(() => {
+        if (logContainerRef.current) {
+            logContainerRef.current.scrollTop =
+                logContainerRef.current.scrollHeight;
+        }
+    }, [logMessages]);
     const [sidebarWidth, setSidebarWidth] = React.useState('12rem');
 
     React.useEffect(() => {
-        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-        return () => clearInterval(timer);
-    }, []);
-
-    React.useEffect(() => {
-        // Watch for sidebar state changes
         const observer = new MutationObserver(() => {
             const sidebar = document.querySelector('[data-slot="sidebar"]');
             if (sidebar) {
@@ -168,6 +169,38 @@ export default function Dashboard({ stats, chartData, logs }: DashboardProps) {
             <AppSidebar />
             <SidebarInset>
                 <div className="flex min-h-screen flex-col bg-[#0a0a0a] pb-10 text-gray-300">
+                    {/* Noise Overlay */}
+                    <svg
+                        className="pointer-events-none fixed inset-0 z-[99] h-screen mix-blend-overlay"
+                        xmlns="http://www.w3.org/2000/svg"
+                        version="1.1"
+                        xmlnsXlink="http://www.w3.org/1999/xlink"
+                        width="100%"
+                        height="100%"
+                        preserveAspectRatio="none"
+                    >
+                        <defs>
+                            <filter id="noise-filter">
+                                <feTurbulence
+                                    type="turbulence"
+                                    baseFrequency="1"
+                                    numOctaves="1"
+                                    stitchTiles="stitch"
+                                    result="noise"
+                                />
+                                <feColorMatrix
+                                    type="matrix"
+                                    values="0 0 0 0 0
+                                            0 0 0 0 0
+                                            0 0 0 0 0
+                                            0 0 0 1 0"
+                                    result="coloredNoise"
+                                />
+                            </filter>
+                        </defs>
+                        <rect width="100%" height="100%" filter="url(#noise-filter)" />
+                    </svg>
+
                     {/* Header */}
                     <header className="sticky top-0 z-50 border-b border-gray-700/50 bg-black/80 shadow-lg shadow-black/20 backdrop-blur-sm">
                         <div className="flex items-center justify-between px-6 py-3">
@@ -233,6 +266,73 @@ export default function Dashboard({ stats, chartData, logs }: DashboardProps) {
                             />
                         </div>
 
+                        {/* Real-time Logs */}
+                        <div className="overflow-hidden rounded-lg border border-gray-700/50 bg-black/40 p-4 shadow-lg shadow-black/20 backdrop-blur-sm">
+                            <div className="mb-3 flex items-center gap-2">
+                                <Activity className="h-4 w-4 text-blue-400" />
+                                <h2 className="font-mono text-sm font-semibold text-white">
+                                    Real-time Logs
+                                </h2>
+                                <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-400 shadow-lg shadow-blue-400/50"></div>
+                            </div>
+                            <div
+                                ref={logContainerRef}
+                                className="max-h-96 w-full space-y-1 overflow-x-auto overflow-y-auto font-mono text-xs"
+                            >
+                                {logMessages.length === 0 ? (
+                                    <div className="text-gray-500">
+                                        Waiting for log messages...
+                                    </div>
+                                ) : (
+                                    logMessages.map((log, index) => {
+                                        const getLevelColor = (
+                                            level: string,
+                                        ) => {
+                                            switch (level) {
+                                                case 'debug':
+                                                    return 'text-gray-400';
+                                                case 'info':
+                                                    return 'text-blue-400';
+                                                case 'notice':
+                                                    return 'text-cyan-400';
+                                                case 'warning':
+                                                    return 'text-yellow-400';
+                                                case 'error':
+                                                    return 'text-red-400';
+                                                case 'critical':
+                                                    return 'text-red-500';
+                                                case 'alert':
+                                                    return 'text-orange-500';
+                                                case 'emergency':
+                                                    return 'text-purple-500';
+                                                default:
+                                                    return 'text-gray-300';
+                                            }
+                                        };
+
+                                        return (
+                                            <div
+                                                key={index}
+                                                className="flex items-start gap-2 text-gray-300"
+                                            >
+                                                <span className="shrink-0 text-gray-500">
+                                                    [{log.timestamp}]
+                                                </span>
+                                                <span
+                                                    className={`uppercase ${getLevelColor(log.level)} min-w-[60px] shrink-0 font-semibold`}
+                                                >
+                                                    [{log.level}]
+                                                </span>
+                                                <span className="min-w-0 whitespace-pre-wrap">
+                                                    {log.message}
+                                                </span>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </div>
+
                         {/* Function Calls Chart */}
                         <FunctionCallsChart
                             data24h={chartData['24h']}
@@ -280,10 +380,6 @@ export default function Dashboard({ stats, chartData, logs }: DashboardProps) {
                             </div>
 
                             <div className="flex items-center gap-6">
-                                <div className="flex items-center gap-2 text-gray-400">
-                                    <Clock className="h-3 w-3" />
-                                    {currentTime.toLocaleTimeString()}
-                                </div>
                                 <div className="text-gray-500">
                                     Uptime:{' '}
                                     <span className="text-gray-300">17s</span>

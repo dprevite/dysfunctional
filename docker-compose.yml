@@ -13,6 +13,7 @@ services:
       - HOST_PATH=${PWD}
     volumes:
       - .:/app
+      - ./Caddyfile:/etc/frankenphp/Caddyfile
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
     tty: true
@@ -20,6 +21,51 @@ services:
       - 'tsbridge.enabled=true'
       - 'tsbridge.service.name=dysfunctional-staging'
       - 'tsbridge.service.port=80'
+    networks:
+      - tsbridge
+
+  dysfunctional-scheduler:
+    build:
+      target: development
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env.docker
+    environment:
+      - HOST_UID=${HOST_UID:-1000}
+      - HOST_GID=${HOST_GID:-1000}
+      - APP_ENV=${APP_ENV:-local}
+      - HOST_PATH=${PWD}
+    volumes:
+      - .:/app
+    #      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+    command: php artisan schedule:work
+    tty: true
+    depends_on:
+      - dysfunctional-staging
+    networks:
+      - tsbridge
+
+  dysfunctional-reverb:
+    build:
+      target: development
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env.docker
+    environment:
+      - HOST_UID=${HOST_UID:-1000}
+      - HOST_GID=${HOST_GID:-1000}
+      - APP_ENV=${APP_ENV:-local}
+      - HOST_PATH=${PWD}
+    volumes:
+      - .:/app
+    restart: unless-stopped
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080 --hostname=dysfunctional-staging.stegosaurus-hoki.ts.net
+    tty: true
+    depends_on:
+      - dysfunctional-staging
     networks:
       - tsbridge
 

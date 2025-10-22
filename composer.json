@@ -10,11 +10,14 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "firebase/php-jwt": "^6.11",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/fortify": "^1.30",
         "laravel/framework": "^12.0",
+        "laravel/reverb": "^1.0",
         "laravel/tinker": "^2.10.1",
         "laravel/wayfinder": "^0.1.9",
+        "mvanduijker/laravel-mercure-broadcaster": "^3.8",
         "spatie/laravel-data": "^4.17",
         "spatie/laravel-typescript-transformer": "^2.5",
         "symfony/yaml": "^7.3"
