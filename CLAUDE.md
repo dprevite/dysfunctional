@@ -13,6 +13,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - laravel/fortify (FORTIFY) - v1
 - laravel/framework (LARAVEL) - v12
 - laravel/prompts (PROMPTS) - v0
+- laravel/reverb (REVERB) - v1
 - laravel/wayfinder (WAYFINDER) - v0
 - laravel/mcp (MCP) - v0
 - laravel/pint (PINT) - v1
@@ -451,35 +452,4 @@ export default () => (
 
 - Every change must be programmatically tested. Write a new test or update an existing test, then run the affected tests to make sure they pass.
 - Run the minimum number of tests needed to ensure code quality and speed. Use `php artisan test` with a specific filename or filter.
-
-
-=== deployment rules ===
-
-## Staging Environment
-
-### TSBridge Configuration
-- The staging environment is available at https://dysfunctional-staging.stegosaurus-hoki.ts.net/
-- TSBridge is used to expose Docker containers over Tailscale with automatic HTTPS
-- TSBridge configuration is located at `/opt/homelab/services/Infrastructure/TSBridge/docker-compose.yml`
-- TSBridge automatically discovers services via Docker labels on the `tsbridge` external network
-
-### Exposing Services via TSBridge
-- Services must be on the `tsbridge` external network
-- Required Docker labels for service discovery:
-  - `tsbridge.enabled=true` - Enable TSBridge for this service
-  - `tsbridge.service.name=<name>` - Service name (becomes `<name>.stegosaurus-hoki.ts.net`)
-  - `tsbridge.service.port=<port>` - Port the service listens on (typically 80 for web services)
-
-### Debugging TSBridge Issues
-- Check if containers are running: `docker compose ps`
-- Check Tailscale status: `tailscale status`
-- Check dysfunctional container logs: `docker compose logs dysfunctional-staging --tail=50`
-- Check tsbridge container logs: `docker logs tsbridge-tsbridge-1 --tail=50`
-- Restart dysfunctional container if needed: `docker compose restart dysfunctional-staging`
-- Test URL accessibility: `curl -s -o /dev/null -w "%{http_code}" https://dysfunctional-staging.stegosaurus-hoki.ts.net/`
-
-### Notes
-- Permission warnings in FrankenPHP/Caddy logs are normal and don't prevent the server from running
-- TSBridge must be running for services to be accessible via Tailscale URLs
-- Use the Tailscale CLI to view all devices in the tailnet
 </laravel-boost-guidelines>
