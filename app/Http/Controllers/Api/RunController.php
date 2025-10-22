@@ -69,8 +69,8 @@ class RunController extends Controller
         $pattern = '/\$\((secret|variable)\.([A-Z_]+):-([^}]+)\}/';
 
         return preg_replace_callback($pattern, function ($matches) use ($secrets, $variables) {
-            $type         = $matches[1];        // 'secret' or 'variable'
-            $key          = $matches[2];          // e.g., 'PLEX_TOKEN'
+            $type         = $matches[1]; // 'secret' or 'variable'
+            $key          = $matches[2]; // e.g., 'PLEX_TOKEN'
             $defaultValue = $matches[3]; // e.g., 'your_plex_token_here'
 
             // Determine which array to look in
