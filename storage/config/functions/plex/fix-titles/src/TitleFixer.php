@@ -156,4 +156,64 @@ class TitleFixer
 
         return null;
     }
+
+    /**
+     * Update titles in Plex for items with quality indicators
+     *
+     * @param array $items Results from findItemsWithQualityIndicators()
+     * @param bool $dryRun If true, only simulate updates without making changes
+     * @return array Summary of update operations
+     * @throws RuntimeException
+     */
+    public function updateTitles(array $items, bool $dryRun = true): array
+    {
+        $summary = [
+            'total' => count($items),
+            'updated' => 0,
+            'skipped' => 0,
+            'failed' => 0,
+            'errors' => [],
+            'dry_run' => $dryRun,
+        ];
+
+        foreach ($items as $item) {
+            $plexId = $item['plex_id'];
+            $libraryId = $item['plex_library_id'];
+            $currentTitle = $item['current_title'];
+            $correctTitle = $item['correct_title'];
+
+            // Skip if no correct title was found
+            if ($correctTitle === null || $correctTitle === '') {
+                $summary['skipped']++;
+                continue;
+            }
+
+            // Skip if titles are already the same
+            if ($currentTitle === $correctTitle) {
+                $summary['skipped']++;
+                continue;
+            }
+
+            if ($dryRun) {
+                $summary['updated']++;
+                continue;
+            }
+
+            // Attempt to update the title
+            try {
+                $this->plexClient->updateMovieTitle($libraryId, $plexId, $correctTitle, true);
+                $summary['updated']++;
+            } catch (RuntimeException $e) {
+                $summary['failed']++;
+                $summary['errors'][] = [
+                    'plex_id' => $plexId,
+                    'current_title' => $currentTitle,
+                    'correct_title' => $correctTitle,
+                    'error' => $e->getMessage(),
+                ];
+            }
+        }
+
+        return $summary;
+    }
 }

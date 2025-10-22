@@ -32,14 +32,22 @@ class PlexClient
      *
      * @throws RuntimeException
      */
-    private function makeRequest(string $endpoint, array $params = []): array
+    private function makeRequest(string $endpoint, array $params = [], string $method = 'GET'): array
     {
         try {
-            $response = $this->client->get($endpoint, [
+            $method = strtoupper($method);
+            $response = $this->client->request($method, $endpoint, [
                 'query' => $params,
             ]);
 
-            $data = json_decode($response->getBody()->getContents(), true);
+            $body = $response->getBody()->getContents();
+
+            // PUT requests for metadata updates return empty body on success
+            if (empty($body)) {
+                return [];
+            }
+
+            $data = json_decode($body, true);
 
             if ($data === null) {
                 throw new RuntimeException("Failed to decode JSON response from {$endpoint}");
@@ -138,5 +146,34 @@ class PlexClient
         }
 
         return array_unique($matches);
+    }
+
+    /**
+     * Update the title of a movie in Plex
+     *
+     * @throws RuntimeException
+     */
+    public function updateMovieTitle(string $libraryId, string $ratingKey, string $newTitle, bool $lockTitle = true): bool
+    {
+        $endpoint = "/library/sections/{$libraryId}/all";
+
+        $params = [
+            'type' => 1, // 1 = movies
+            'id' => $ratingKey,
+            'includeExternalMedia' => 1,
+            'title.value' => $newTitle,
+            'title.locked' => $lockTitle ? 1 : 0,
+        ];
+
+        try {
+            $this->makeRequest($endpoint, $params, 'PUT');
+            return true;
+        } catch (RuntimeException $e) {
+            throw new RuntimeException(
+                "Failed to update title for movie {$ratingKey}: " . $e->getMessage(),
+                0,
+                $e
+            );
+        }
     }
 }

@@ -17,6 +17,8 @@ define('PLEX_URL', getenv('PLEX_URL'));
 define('PLEX_TOKEN', getenv('PLEX_TOKEN'));
 define('TMDB_API_KEY', getenv('TMDB_API_KEY'));
 define('IGNORED_LIBRARIES', getenv('IGNORED_LIBRARIES'));
+define('UPDATE_TITLES', filter_var(getenv('UPDATE_TITLES'), FILTER_VALIDATE_BOOLEAN));
+define('DRY_RUN', getenv('DRY_RUN') !== 'false');
 
 $formatter = new JsonFormatter();
 $logger = Logger::getInstance();
@@ -41,6 +43,23 @@ try {
     file_put_contents($cacheFile, $formatter->format($results));
 
     $logger->info('Results cached', ['file' => $cacheFile]);
+
+    // Update titles if requested
+    if (UPDATE_TITLES) {
+        $logger->info('Starting title updates', [
+            'dry_run' => DRY_RUN,
+            'items_to_process' => count($results),
+        ]);
+
+        $updateSummary = $fixer->updateTitles($results, DRY_RUN);
+
+        $logger->info('Title update summary', $updateSummary);
+
+        // Output update summary
+        echo "\n\n=== UPDATE SUMMARY ===\n";
+        echo $formatter->format($updateSummary);
+        echo "\n";
+    }
 
     // Output results
     echo $formatter->format($results);

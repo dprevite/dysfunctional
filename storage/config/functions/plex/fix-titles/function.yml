@@ -15,3 +15,5 @@ function:
     PLEX_TOKEN: $(secret.PLEX_TOKEN:-your_plex_token_here}
     TMDB_API_KEY: $(secret.TMDB_API_KEY:-your_tmdb_api_key_here}
     IGNORED_LIBRARIES: $(variable.IGNORED_LIBRARIES:-}
+    UPDATE_TITLES: true
+    DRY_RUN: false
