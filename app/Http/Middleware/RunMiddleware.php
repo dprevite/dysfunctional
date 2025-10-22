@@ -58,17 +58,28 @@ class RunMiddleware
             'runtime_path'  => $function->runtime()->path,
         ]);
 
+        \Illuminate\Support\Facades\Config::set(
+            key: 'logging.channels.run_file',
+            value: [
+                'driver' => 'single',
+                'path'   => storage_path("runs/{$run->id}/run.log"),
+            ]
+        );
+
+        \Illuminate\Support\Facades\Config::set(
+            key: 'logging.channels.stack.channels',
+            value: ['single', 'broadcast', 'run_file']
+        );
+
         Log::info(
             'Starting run for function: ' . $function->path .
             ' with runtime: ' . $function->runtime()->path
         );
 
         file_put_contents(
-            filename: storage_path('runs/' . $run->id) . '-request.log',
+            filename: storage_path('runs/' . $run->id) . '/request.log',
             data: new RequestFormatter()->format($request)
         );
-
-        Log::info(new RequestFormatter()->format($request));
 
         $response = $next($request);
 
@@ -80,11 +91,9 @@ class RunMiddleware
         ]);
 
         file_put_contents(
-            filename: storage_path('runs/' . $run->id) . '-response.log',
+            filename: storage_path('runs/' . $run->id) . '/response.log',
             data: new ResponseFormatter()->format($response)
         );
-
-        Log::info(new ResponseFormatter()->format($response));
 
         Log::info(
             'Completed run for function: ' . $function->path .
